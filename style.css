@@ -31,7 +31,7 @@ body {
   /* justify-content: center; */
   /* overflow: hidden; */
   /* flex-wrap: nowrap; */
-  column-count: 8;
+  /* column-count: 8; */
   /* column-gap: .5vw; */
   /* padding-top: .5vw; */
 }
@@ -116,10 +116,14 @@ button {
 
 .album {
   position: relative;
-  width: 12.7vw;
-  height: 12.7vw;
+  width: 12.5vw;
+  height: 12.5vw;
   break-inside: avoid;
-  display: flex;
+  display: inline-flex;
+  float: left;
+  flex-wrap: wrap;
+  align-content: stretch;
+  justify-content: center;
 }
 
 img {

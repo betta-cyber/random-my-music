@@ -6,7 +6,7 @@ use yew::prelude::*;
 use yew::{function_component, html, Html, Properties};
 use std::collections::HashMap;
 use gloo_net::http::Request;
-use gloo_console::log;
+use gloo_timers::callback::Timeout;
 
 macro_rules! console_log {
     // Note that this is using the `log` function imported above during
@@ -85,6 +85,18 @@ pub fn app() -> Html {
             || ()
         }, ());
     }
+
+    // spawn_local(async {
+        // TimeoutFuture::new(1_000).await;
+        // // Do something here after the one second timeout is up!
+    // });
+    // let timeout = Timeout::new(1_000, move || {
+        // // wasm_bindgen_futures::spawn_local(async move {
+            // // let res = Request::get(url).send().await.unwrap();
+            // // let data: Vec<Album> = res.json().await.unwrap();
+            // // console_log!("1. {:#?}", data);
+        // // });
+    // });
 
     // let img: Html = html! {
         // <img src="public/albums/1.jpg" alt="Girl in a jacket" width="150" height="150" />
