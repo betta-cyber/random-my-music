@@ -58,7 +58,9 @@ fn AlbumCover(props: &Props) -> Html {
     let Props { album } = props;
     let img_src = format!("{}", album.cover);
     html! {
-        <img src={img_src} width="250" height="250" />
+        <div class="album">
+            <img src={img_src} />
+        </div>
     }
 }
 
@@ -126,7 +128,6 @@ pub fn app() -> Html {
             // name.set(greet_input_ref.cast::<web_sys::HtmlInputElement>().unwrap().value());
         // })
     // };
-
 
 
     html! {
