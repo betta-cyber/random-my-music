@@ -4,6 +4,25 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew::{function_component, html, Html, Properties};
+use std::collections::HashMap;
+use gloo_net::http::Request;
+use gloo_console::log;
+
+macro_rules! console_log {
+    // Note that this is using the `log` function imported above during
+    // `bare_bones`
+    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+}
+
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct Album {
+    album: String,
+    artist: String,
+    cover: String,
+    media_url: HashMap<String, serde_json::Value>,
+}
+
 
 #[wasm_bindgen]
 extern "C" {
@@ -26,7 +45,7 @@ struct GreetArgs<'a> {
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
-    pub aid: i32,
+    pub album: Album,
 }
 
 // #[function_component]
@@ -36,8 +55,8 @@ pub struct Props {
 
 #[function_component]
 fn AlbumCover(props: &Props) -> Html {
-    let Props { aid } = props;
-    let img_src = format!("public/albums/{}.jpg", aid);
+    let Props { album } = props;
+    let img_src = format!("{}", album.cover);
     html! {
         <img src={img_src} width="250" height="250" />
     }
@@ -45,6 +64,25 @@ fn AlbumCover(props: &Props) -> Html {
 
 #[function_component(App)]
 pub fn app() -> Html {
+
+    let url = "http://localhost:1420/public/res.json";
+
+    let items = use_state(|| vec![]);
+    {
+
+        let items = items.clone();
+        use_effect_with_deps(move |_| {
+            let items = items.clone();
+            wasm_bindgen_futures::spawn_local(async move {
+                let res = Request::get(url).send().await.unwrap();
+                let data: Vec<Album> = res.json().await.unwrap();
+                console_log!("1. {:#?}", data);
+
+                items.set(data);
+            });
+            || ()
+        }, ());
+    }
 
     // let img: Html = html! {
         // <img src="public/albums/1.jpg" alt="Girl in a jacket" width="150" height="150" />
@@ -90,13 +128,13 @@ pub fn app() -> Html {
     // };
 
 
-    let items = (1..=10).collect::<Vec<_>>();
 
     html! {
         <main class="container">
             {
-                items.into_iter().map(|name| {
-                    html!{ <AlbumCover aid={name} /> }
+                items.iter().map(|album| {
+                    let album = album.clone();
+                    html!{ <AlbumCover album={album} /> }
                     // html!{<div key={name}>{ format!("Hello, I'am {}!",name) }</div>}
                 }).collect::<Html>()
             }
