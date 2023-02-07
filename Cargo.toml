@@ -19,6 +19,7 @@ gloo = "0.8.0"
 gloo-net = { version="0.2.6", features = ["json"] }
 gloo-console = "0.2.3"
 gloo-timers = { version="0.2.6", features = ["futures"] }
+unescape = "0.1.0"
 
 [workspace]
 members = ["src-tauri"]

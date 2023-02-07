@@ -7,6 +7,7 @@ use yew::{function_component, html, Html, Properties};
 use std::collections::HashMap;
 use gloo_net::http::Request;
 use gloo_timers::callback::Timeout;
+use unescape::unescape;
 
 macro_rules! console_log {
     // Note that this is using the `log` function imported above during
@@ -17,7 +18,7 @@ macro_rules! console_log {
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Album {
-    album: String,
+    name: String,
     artist: String,
     cover: String,
     media_url: HashMap<String, serde_json::Value>,
@@ -48,26 +49,64 @@ pub struct Props {
     pub album: Album,
 }
 
-// #[function_component]
-// fn HelloWorld(props: &Props) -> Html {
-    // html! { <>{"Am I loading? - "}{props.is_loading.clone()}</> }
-// }
-
 #[function_component]
 fn AlbumCover(props: &Props) -> Html {
     let Props { album } = props;
-    let img_src = format!("{}", album.cover);
+    let img_src = {
+        if album.cover.contains("block") {
+            format!("http://127.0.0.1:1420/public/default.png")
+        } else {
+            format!("{}", album.cover)
+        }
+    };
+
+    let media_url = {
+        if album.media_url.contains_key("spotify") {
+            let spotify_url = {
+                let mut spotify = "";
+                for (k, v) in album.media_url.get("spotify").unwrap().as_object().unwrap() {
+                    match v.get("default") {
+                        Some(default) => {
+                            if default.as_bool().unwrap() {
+                                spotify = k;
+                                break
+                            }
+                        }
+                        None => {}
+                    }
+                }
+                spotify
+            };
+            format!("https://open.spotify.com/album/{}", spotify_url)
+        } else if album.media_url.contains_key("soundcloud") {
+            let soundcloud_url = {
+                let mut soundcloud = "";
+                for (_, v) in album.media_url.get("soundcloud").unwrap().as_object().unwrap() {
+                    let tmp = v.get("url").unwrap().as_str().unwrap();
+                    soundcloud = tmp;
+                    break
+                }
+                soundcloud
+            };
+            format!("https://{}", soundcloud_url)
+
+        } else {
+            format!("/")
+        }
+    };
     html! {
-        <div class="album">
-            <img src={img_src} />
-        </div>
+        <a href={media_url}>
+            <div class="album">
+                <img src={img_src} />
+            </div>
+        </a>
     }
 }
 
 #[function_component(App)]
 pub fn app() -> Html {
 
-    let url = "http://localhost:1420/public/res.json";
+    let url = "http://127.0.0.1:5000/today";
 
     let items = use_state(|| vec![]);
     {
@@ -78,60 +117,13 @@ pub fn app() -> Html {
             wasm_bindgen_futures::spawn_local(async move {
                 let res = Request::get(url).send().await.unwrap();
                 let data: Vec<Album> = res.json().await.unwrap();
-                console_log!("1. {:#?}", data);
+                // console_log!("1. {:#?}", data);
 
                 items.set(data);
             });
             || ()
         }, ());
     }
-
-    // spawn_local(async {
-        // TimeoutFuture::new(1_000).await;
-        // // Do something here after the one second timeout is up!
-    // });
-    // let timeout = Timeout::new(1_000, move || {
-        // // wasm_bindgen_futures::spawn_local(async move {
-            // // let res = Request::get(url).send().await.unwrap();
-            // // let data: Vec<Album> = res.json().await.unwrap();
-            // // console_log!("1. {:#?}", data);
-        // // });
-    // });
-
-    // let img: Html = html! {
-        // <img src="public/albums/1.jpg" alt="Girl in a jacket" width="150" height="150" />
-    // };
-    // let greet_input_ref = use_node_ref();
-
-    // let name = use_state(|| String::new());
-
-    // let greet_msg = use_state(|| String::new());
-    // {
-        // let greet_msg = greet_msg.clone();
-        // let name = name.clone();
-        // let name2 = name.clone();
-        // use_effect_with_deps(
-            // move |_| {
-                // spawn_local(async move {
-                    // if name.is_empty() {
-                        // return;
-                    // }
-
-                    // // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-                    // let new_msg = invoke(
-                        // "greet",
-                        // to_value(&GreetArgs { name: &*name }).unwrap(),
-                    // )
-                    // .await;
-                    // log(&new_msg.as_string().unwrap());
-                    // greet_msg.set(new_msg.as_string().unwrap());
-                // });
-
-                // || {}
-            // },
-            // name2,
-        // );
-    // }
 
     // let greet = {
         // let name = name.clone();
@@ -148,7 +140,6 @@ pub fn app() -> Html {
                 items.iter().map(|album| {
                     let album = album.clone();
                     html!{ <AlbumCover album={album} /> }
-                    // html!{<div key={name}>{ format!("Hello, I'am {}!",name) }</div>}
                 }).collect::<Html>()
             }
         </main>
