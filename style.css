@@ -130,4 +130,29 @@ img {
   pointer-events: None !important;
   /* float: left; */
   overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+@media screen and (min-width: 961px) {
+  .album {
+    position: relative;
+    width: 25vw;
+    height: 25vw;
+    break-inside: avoid;
+    display: inline-flex;
+    float: left;
+    flex-wrap: wrap;
+    align-content: stretch;
+    justify-content: center;
+  }
+}
+
+@media screen and (min-width: 961px) {
+  img {
+    pointer-events: None !important;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
 }

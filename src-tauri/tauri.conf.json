@@ -63,10 +63,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 630,
         "resizable": true,
         "title": "random-my-music",
-        "width": 800
+        "width": 960
       }
     ]
   }

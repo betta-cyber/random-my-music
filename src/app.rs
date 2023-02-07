@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::to_value;
+// use serde_wasm_bindgen::to_value;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::spawn_local;
+// use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew::{function_component, html, Html, Properties};
 use std::collections::HashMap;
 use gloo_net::http::Request;
-use gloo_timers::callback::Timeout;
-use unescape::unescape;
+// use gloo_timers::callback::Timeout;
+
 
 macro_rules! console_log {
     // Note that this is using the `log` function imported above during
@@ -91,11 +91,11 @@ fn AlbumCover(props: &Props) -> Html {
             format!("https://{}", soundcloud_url)
 
         } else {
-            format!("/")
+            format!("#")
         }
     };
     html! {
-        <a href={media_url}>
+        <a href={media_url} target="_blank">
             <div class="album">
                 <img src={img_src} />
             </div>
@@ -117,7 +117,7 @@ pub fn app() -> Html {
             wasm_bindgen_futures::spawn_local(async move {
                 let res = Request::get(url).send().await.unwrap();
                 let data: Vec<Album> = res.json().await.unwrap();
-                // console_log!("1. {:#?}", data);
+                console_log!("1. {:#?}", data);
 
                 items.set(data);
             });
