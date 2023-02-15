@@ -19,6 +19,8 @@ gloo = "0.8.0"
 gloo-net = { version="0.2.6", features = ["json"] }
 gloo-console = "0.2.3"
 gloo-timers = { version="0.2.6", features = ["futures"] }
+gloo-storage = "0.2.2"
+uuid = { version="1.3.0", features = ["v4", "js"] }
 
 [workspace]
 members = ["src-tauri"]

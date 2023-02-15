@@ -6,7 +6,10 @@ use yew::prelude::*;
 use yew::{function_component, html, Html, Properties};
 use std::collections::HashMap;
 use gloo_net::http::Request;
-// use gloo_timers::callback::Timeout;
+use gloo::storage::LocalStorage;
+use gloo_storage::Storage;
+use uuid::Uuid;
+
 
 
 macro_rules! console_log {
@@ -54,7 +57,9 @@ fn AlbumCover(props: &Props) -> Html {
     let Props { album } = props;
     let img_src = {
         if album.cover.contains("block") {
-            format!("http://127.0.0.1:1420/public/default.png")
+            format!("/static/default.png")
+        } else if album.cover.is_empty() {
+            format!("/static/default.png")
         } else {
             format!("{}", album.cover)
         }
@@ -106,7 +111,17 @@ fn AlbumCover(props: &Props) -> Html {
 #[function_component(App)]
 pub fn app() -> Html {
 
-    let url = "http://127.0.0.1:5000/today";
+    let client_id: String = match LocalStorage::get("client_id") {
+        Ok(client_id) => {
+            client_id
+        },
+        Err(_) => {
+            let client_id = Uuid::new_v4().to_string();
+            LocalStorage::set("client_id", client_id.clone()).ok();
+            client_id
+        }
+    };
+    let url = format!("https://rymbackend-production.up.railway.app/today?client_id={}", client_id);
 
     let items = use_state(|| vec![]);
     {
@@ -115,7 +130,7 @@ pub fn app() -> Html {
         use_effect_with_deps(move |_| {
             let items = items.clone();
             wasm_bindgen_futures::spawn_local(async move {
-                let res = Request::get(url).send().await.unwrap();
+                let res = Request::get(&url).send().await.unwrap();
                 let data: Vec<Album> = res.json().await.unwrap();
                 console_log!("1. {:#?}", data);
 

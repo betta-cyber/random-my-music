@@ -116,8 +116,8 @@ button {
 
 .album {
   position: relative;
-  width: 12.5vw;
-  height: 12.5vw;
+  width: 25vw;
+  height: 25vw;
   break-inside: avoid;
   display: inline-flex;
   float: left;
@@ -134,11 +134,11 @@ img {
   height: 100%;
 }
 
-@media screen and (min-width: 961px) {
+@media screen and (min-width: 960px) {
   .album {
     position: relative;
-    width: 25vw;
-    height: 25vw;
+    width: 12.5vw;
+    height: 12.5vw;
     break-inside: avoid;
     display: inline-flex;
     float: left;
@@ -148,7 +148,7 @@ img {
   }
 }
 
-@media screen and (min-width: 961px) {
+@media screen and (min-width: 960px) {
   img {
     pointer-events: None !important;
     overflow: hidden;
