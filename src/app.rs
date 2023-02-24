@@ -30,6 +30,7 @@ enum Route {
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Album {
+    id: i32,
     name: String,
     artist: String,
     cover: String,
@@ -77,9 +78,7 @@ pub struct DetailProps {
 fn AlbumCover(props: &Props) -> Html {
     let Props { album } = props;
     let img_src = {
-        if album.cover.contains("block") {
-            format!("/static/default.png")
-        } else if album.cover.is_empty() {
+        if album.cover.is_empty() {
             format!("/static/default.png")
         } else {
             format!("{}", album.cover)
@@ -120,10 +119,17 @@ fn AlbumCover(props: &Props) -> Html {
             format!("#")
         }
     };
+    let detail_url = format!("/album/{}", album.id);
+
+    let on_error = Callback::from(move | e: Event | {
+        console_log!("{:#?}", e);
+        // img_src = "https://randomyourmusic.fun/static/default.png".to_string();
+    });
+
     html! {
-        <a href={media_url} target="_blank">
+        <a href={detail_url} target="_blank">
             <div class="album">
-                <img src={img_src} />
+                <img src={img_src} onerror={on_error} />
             </div>
         </a>
     }
@@ -169,7 +175,8 @@ fn home() -> Html {
             client_id
         }
     };
-    let url = format!("https://rymbackend-production.up.railway.app/today?client_id={}", client_id);
+    // let url = format!("https://rymbackend-production.up.railway.app/today?client_id={}", client_id);
+    let url = format!("http://0.0.0.0:5001/today?client_id={}", client_id);
 
     let items = use_state(|| vec![]);
     {
