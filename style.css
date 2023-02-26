@@ -162,3 +162,61 @@ img {
 ::-webkit-scrollbar {
   display: none; /* Chrome Safari */
 }
+
+
+.menu {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  color: red;
+  display: inline-block;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+}
+
+
+.bar1, .bar2, .bar3 {
+  width: 35px;
+  height: 5px;
+  background-color: #333;
+  margin: 6px 0;
+  transition: 0.4s;
+  pointer-events: none;
+}
+
+
+/* 旋转第一个条形图 */
+.change .bar1 {
+  -webkit-transform: rotate(-45deg) translate(-9px, 6px) ;
+  transform: rotate(-45deg) translate(-9px, 6px) ;
+}
+
+/* 淡出第二条 */
+.change .bar2 {
+  opacity: 0;
+}
+
+/* 旋转最后一个条形图 */
+.change .bar3 {
+  -webkit-transform: rotate(45deg) translate(-8px, -8px) ;
+  transform: rotate(45deg) translate(-8px, -8px) ;
+}
+
+.menu-item {
+  display: none;
+}
+
+.menu-display {
+  display: block;
+}
+
+.menu-item ul {
+  float: left;
+  display: content;
+}
+
+.menu-item li {
+  display: block;
+  width: 50px;
+}

@@ -10,6 +10,7 @@ use gloo_net::http::Request;
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
 use uuid::Uuid;
+use web_sys::{HtmlElement, MouseEvent};
 
 macro_rules! console_log {
     // Note that this is using the `log` function imported above during
@@ -85,7 +86,7 @@ fn AlbumCover(props: &Props) -> Html {
         }
     };
 
-    let media_url = {
+    let _media_url = {
         if album.media_url.contains_key("spotify") {
             let spotify_url = {
                 let mut spotify = "";
@@ -153,11 +154,39 @@ fn switch(routes: Route) -> Html {
 
 #[function_component(App)]
 pub fn app() -> Html {
+    let click = Callback::from(|e: MouseEvent| {
+        if let Some(target) = e.target_dyn_into::<HtmlElement>() {
+            let class_name = target.class_name();
+            if class_name == "menu" {
+                target.set_class_name("menu change");
+            } else if class_name == "menu change" {
+                target.set_class_name("menu");
+            }
+
+            let menu = target.get_elements_by_class_name("menu-item").item(0).unwrap();
+            if menu.class_name() == "menu-item" {
+                menu.set_class_name("menu-item menu-display");
+            } else if menu.class_name() == "menu-item menu-display" {
+                menu.set_class_name("menu-item");
+            }
+        }
+    });
     html! {
         <main class="container">
             <BrowserRouter>
                 <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
             </BrowserRouter>
+            <div class="menu" onclick={click}>
+                <div class="bar1"></div>
+                <div class="bar2"></div>
+                <div class="bar3"></div>
+                <div class="menu-item">
+                    <ul>
+                      <li><a href="#home">{"主页"}</a></li>
+                      <li><a href="#about">{"关于"}</a></li>
+                    </ul>
+                </div>
+            </div>
         </main>
     }
 }
