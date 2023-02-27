@@ -24,6 +24,8 @@ enum Route {
     Home,
     #[at("/album/*album_id")]
     Album { album_id: String },
+    #[at("/about")]
+    About,
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -145,6 +147,9 @@ fn switch(routes: Route) -> Html {
         Route::Album{ album_id } => html! {
             <AlbumPage album_id={album_id} />
         },
+        Route::About => html! {
+            <AboutPage />
+        },
         Route::NotFound => html! {
             <h1>{ "404" }</h1>
         },
@@ -152,8 +157,9 @@ fn switch(routes: Route) -> Html {
 }
 
 
-#[function_component(App)]
-pub fn app() -> Html {
+#[function_component]
+pub fn Menu() -> Html {
+
     let click = Callback::from(|e: MouseEvent| {
         if let Some(target) = e.target_dyn_into::<HtmlElement>() {
             let class_name = target.class_name();
@@ -163,7 +169,8 @@ pub fn app() -> Html {
                 target.set_class_name("menu");
             }
 
-            let menu = target.get_elements_by_class_name("menu-item").item(0).unwrap();
+            let window = web_sys::window().expect("no global `window` exists");
+            let menu = window.document().unwrap().get_elements_by_class_name("menu-item").item(0).unwrap();
             if menu.class_name() == "menu-item" {
                 menu.set_class_name("menu-item menu-display");
             } else if menu.class_name() == "menu-item menu-display" {
@@ -171,22 +178,37 @@ pub fn app() -> Html {
             }
         }
     });
+
+    html! {
+        <>
+        <div class="menu" onclick={click}>
+            <div class="bar1"></div>
+            <div class="bar2"></div>
+            <div class="bar3"></div>
+        </div>
+        <div class="menu-item">
+            <div class="">
+                <ul>
+                  <li><a href="/">{"主  页"}</a></li>
+                  <li><a href="/register">{"注  册"}</a></li>
+                  <li><a href="/login">{"登  录"}</a></li>
+                  <li><a href="/about">{"关  于"}</a></li>
+                </ul>
+            </div>
+        </div>
+        </>
+    }
+}
+
+
+#[function_component(App)]
+pub fn app() -> Html {
     html! {
         <main class="container">
+            <Menu />
             <BrowserRouter>
                 <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
             </BrowserRouter>
-            <div class="menu" onclick={click}>
-                <div class="bar1"></div>
-                <div class="bar2"></div>
-                <div class="bar3"></div>
-                <div class="menu-item">
-                    <ul>
-                      <li><a href="#home">{"主页"}</a></li>
-                      <li><a href="#about">{"关于"}</a></li>
-                    </ul>
-                </div>
-            </div>
         </main>
     }
 }
@@ -261,6 +283,16 @@ fn album(props: &DetailProps) -> Html {
             <span>{&detail.descriptors}</span>
             <span>{&detail.released}</span>
             </div>
+        </div>
+    }
+}
+
+
+#[function_component(AboutPage)]
+pub fn about() -> Html {
+    html! {
+        <div class="about">
+            {"也许我们不能通过一本书的封面来判断书的质量，但当我们谈论到音乐时，专辑封面有时候会扮演一个重要的角色，他们是专辑的视觉表达。自从黑胶唱片诞生以来，专辑封面经过长时间的发展，已经从简单的个性表达逐步演变成了复杂的艺术作品。我喜欢看它们，也喜欢谈论它们，它们为音乐赋予了视觉表现力。一张专辑的封面背后往往有许多关于音乐的有趣故事，所以我设计创作了这个网站。致力于从封面视觉出发，基于音乐流派，让用户探索发现更多有趣的音乐。"}
         </div>
     }
 }

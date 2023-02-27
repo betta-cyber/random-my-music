@@ -1,6 +1,7 @@
 .logo.yew:hover {
   filter: drop-shadow(0 0 2em #20a88a);
 }
+
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -8,7 +9,8 @@
   font-weight: 400;
 
   color: #0f0f0f;
-  background-color: #f6f6f6;
+  /* background-color: #f6f6f6; */
+  background-color: aliceblue;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -166,20 +168,22 @@ img {
 
 .menu {
   position: fixed;
-  top: 0px;
-  left: 0px;
-  color: red;
+  top: 5px;
+  right: 5px;
+  color: #000;
   display: inline-block;
   cursor: pointer;
-  width: 40px;
-  height: 40px;
+  /* width: 40px; */
+  /* height: 40px; */
+  z-index: 99;
 }
 
 
 .bar1, .bar2, .bar3 {
   width: 35px;
   height: 5px;
-  background-color: #333;
+  /* background-color: aliceblue; */
+  background-color: slategray;
   margin: 6px 0;
   transition: 0.4s;
   pointer-events: none;
@@ -204,19 +208,48 @@ img {
 }
 
 .menu-item {
-  display: none;
+  display: block;
+  height: 100%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: rgb(15 15 15 / 80%);
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+  width: 0;
 }
 
 .menu-display {
-  display: block;
+  width: 100%;
 }
 
 .menu-item ul {
   float: left;
-  display: content;
+  list-style-type: none;
+  display: contents;
 }
 
-.menu-item li {
+.menu-item li a {
+  padding: 8px 8px 8px 32px;
+  font-size: 35px;
+  line-height: 1.8;
+  color: #818181;
+  transition: 0.3s;
+}
+
+.menu-item li a:hover {
+  color: #f1f1f1;
+}
+
+.about {
+  text-align: left;
   display: block;
-  width: 50px;
+  width: 800px;
+  margin: 100px auto;
+  font-size: 20px;
+  font-weight: 300;
+  text-indent: 40px;
+  line-height: 2;
 }
