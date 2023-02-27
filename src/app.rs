@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use serde::{Deserialize, Serialize};
 // use serde_wasm_bindgen::to_value;
 use wasm_bindgen::prelude::*;
@@ -10,7 +11,10 @@ use gloo_net::http::Request;
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
 use uuid::Uuid;
-use web_sys::{HtmlElement, MouseEvent};
+use web_sys::{HtmlElement, MouseEvent, HtmlInputElement};
+use wasm_bindgen_futures::spawn_local;
+use crate::components::{form_input::FormInput};
+use crate::api::{user_api::login};
 
 macro_rules! console_log {
     // Note that this is using the `log` function imported above during
@@ -24,6 +28,10 @@ enum Route {
     Home,
     #[at("/album/*album_id")]
     Album { album_id: String },
+    #[at("/register")]
+    Register,
+    #[at("/sign_in")]
+    SignIn,
     #[at("/about")]
     About,
     #[not_found]
@@ -147,6 +155,12 @@ fn switch(routes: Route) -> Html {
         Route::Album{ album_id } => html! {
             <AlbumPage album_id={album_id} />
         },
+        Route::Register => html! {
+            <RegisterPage />
+        },
+        Route::SignIn => html! {
+            <SignInPage />
+        },
         Route::About => html! {
             <AboutPage />
         },
@@ -160,7 +174,7 @@ fn switch(routes: Route) -> Html {
 #[function_component]
 pub fn Menu() -> Html {
 
-    let click = Callback::from(|e: MouseEvent| {
+    let onclick = Callback::from(|e: MouseEvent| {
         if let Some(target) = e.target_dyn_into::<HtmlElement>() {
             let class_name = target.class_name();
             if class_name == "menu" {
@@ -181,7 +195,7 @@ pub fn Menu() -> Html {
 
     html! {
         <>
-        <div class="menu" onclick={click}>
+        <div class="menu" onclick={onclick}>
             <div class="bar1"></div>
             <div class="bar2"></div>
             <div class="bar3"></div>
@@ -189,10 +203,10 @@ pub fn Menu() -> Html {
         <div class="menu-item">
             <div class="">
                 <ul>
-                  <li><a href="/">{"主  页"}</a></li>
-                  <li><a href="/register">{"注  册"}</a></li>
-                  <li><a href="/login">{"登  录"}</a></li>
-                  <li><a href="/about">{"关  于"}</a></li>
+                  <li><a href="/">{"Home"}</a></li>
+                  <li><a href="/register">{"Sign up"}</a></li>
+                  <li><a href="/sign_in">{"Sign in"}</a></li>
+                  <li><a href="/about">{"About"}</a></li>
                 </ul>
             </div>
         </div>
@@ -287,6 +301,103 @@ fn album(props: &DetailProps) -> Html {
     }
 }
 
+#[function_component(RegisterPage)]
+pub fn register() -> Html {
+    html! {
+        <div class="about">
+        </div>
+    }
+}
+
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+struct LoginSchema {
+    // #[validate(
+        // length(min = 1, message = "Email is required"),
+        // email(message = "Email is invalid")
+    // )]
+    username: String,
+    // #[validate(
+        // length(min = 1, message = "Password is required"),
+        // length(min = 6, message = "Password must be at least 6 characters")
+    // )]
+    password: String,
+}
+
+fn get_input_callback(
+    name: &'static str,
+    cloned_form: UseStateHandle<LoginSchema>,
+) -> Callback<String> {
+    Callback::from(move |value| {
+        let mut data = cloned_form.deref().clone();
+        match name {
+            "username" => data.username = value,
+            "password" => data.password = value,
+            _ => (),
+        }
+        cloned_form.set(data);
+    })
+}
+
+#[function_component(SignInPage)]
+pub fn sign_in() -> Html {
+
+    let form = use_state(|| LoginSchema::default());
+    let username_input_ref = NodeRef::default();
+    let password_input_ref = NodeRef::default();
+    let navigator = use_navigator().unwrap();
+
+    let handle_username_input = get_input_callback("username", form.clone());
+    let handle_password_input = get_input_callback("password", form.clone());
+
+    let on_submit = {
+        let cloned_form = form.clone();
+        let cloned_username_input_ref = username_input_ref.clone();
+        let cloned_password_input_ref = password_input_ref.clone();
+        let cloned_navigator = navigator.clone();
+
+        Callback::from( move | event: SubmitEvent | {
+            event.prevent_default();
+
+            let form = cloned_form.clone();
+            let username_input_ref = cloned_username_input_ref.clone();
+            let password_input_ref = cloned_password_input_ref.clone();
+            let navigator = cloned_navigator.clone();
+
+            spawn_local(async move {
+                let form_data = form.clone();
+                let username_input = username_input_ref.cast::<HtmlInputElement>().unwrap();
+                let password_input = password_input_ref.cast::<HtmlInputElement>().unwrap();
+
+                username_input.set_value("");
+                password_input.set_value("");
+                let form_json = serde_json::to_string(&*form_data).unwrap();
+                let res = login(&form_json).await;
+                match res {
+                    Ok(_) => {
+                        navigator.push(&Route::Home);
+                    }
+                    Err(_) => {
+                        // set_show_alert(e.to_string(), dispatch);
+                    }
+                };
+            });
+        })
+    };
+
+    html! {
+        <div class="sign-in">
+            <form onsubmit={on_submit}>
+                <h3>{"Login Here"}</h3>
+                <label for="username">{"Username"}</label>
+                <FormInput label="Username" name="username" input_type="username" input_ref={username_input_ref} handle_onchange={handle_username_input}/>
+                <label for="password">{"Password"}</label>
+                <FormInput label="Password" name="password" input_type="password" input_ref={password_input_ref} handle_onchange={handle_password_input}/>
+                <button>{"Log In"}</button>
+            </form>
+        </div>
+    }
+}
 
 #[function_component(AboutPage)]
 pub fn about() -> Html {
