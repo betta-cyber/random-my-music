@@ -42,7 +42,7 @@ pub fn app() -> Html {
     html! {
         <main class="container">
             <Menu />
-            <BrowserRouter>
+            <HashRouter>
                 <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
                 if show_alert {
                     <AlertComponent
@@ -55,7 +55,7 @@ pub fn app() -> Html {
                         // <Spinner width={Some("1.5rem")} height={Some("1.5rem")} color="text-ct-red-600" />
                     // </div>
                 // }
-            </BrowserRouter>
+            </HashRouter>
         </main>
     }
 }

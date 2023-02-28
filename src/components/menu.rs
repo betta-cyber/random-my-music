@@ -1,20 +1,23 @@
 use web_sys::HtmlElement;
 use yew::prelude::*;
+// use yew_router::prelude::Link;
+// use crate::router::Route;
 
 
 #[function_component]
 pub fn Menu() -> Html {
 
     let onclick = Callback::from(|e: MouseEvent| {
-        if let Some(target) = e.target_dyn_into::<HtmlElement>() {
-            let class_name = target.class_name();
-            if class_name == "menu" {
-                target.set_class_name("menu change");
-            } else if class_name == "menu change" {
-                target.set_class_name("menu");
+        if let Some(_) = e.target_dyn_into::<HtmlElement>() {
+            let window = web_sys::window().expect("no global `window` exists");
+
+            let m = window.document().unwrap().get_elements_by_class_name("menu").item(0).unwrap();
+            if m.class_name() == "menu" {
+                m.set_class_name("menu change");
+            } else if m.class_name() == "menu change" {
+                m.set_class_name("menu");
             }
 
-            let window = web_sys::window().expect("no global `window` exists");
             let menu = window.document().unwrap().get_elements_by_class_name("menu-item").item(0).unwrap();
             if menu.class_name() == "menu-item" {
                 menu.set_class_name("menu-item menu-display");
@@ -26,7 +29,7 @@ pub fn Menu() -> Html {
 
     html! {
         <>
-        <div class="menu" onclick={onclick}>
+        <div class="menu" onclick={onclick.clone()}>
             <div class="bar1"></div>
             <div class="bar2"></div>
             <div class="bar3"></div>
@@ -34,10 +37,10 @@ pub fn Menu() -> Html {
         <div class="menu-item">
             <div class="">
                 <ul>
-                  <li><a href="/">{"Home"}</a></li>
-                  <li><a href="/register">{"Sign up"}</a></li>
-                  <li><a href="/sign_in">{"Sign in"}</a></li>
-                  <li><a href="/about">{"About"}</a></li>
+                  <li><a href="/" >{"Home"}</a></li>
+                  <li><a href="/#/register" onclick={onclick.clone()}>{"Sign up"}</a></li>
+                  <li><a href="/#/sign_in" onclick={onclick.clone()}>{"Sign in"}</a></li>
+                  <li><a href="/#/about" onclick={onclick}>{"About"}</a></li>
                 </ul>
             </div>
         </div>
