@@ -1,5 +1,4 @@
-use std::ops::Deref;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 // use serde_wasm_bindgen::to_value;
 use wasm_bindgen::prelude::*;
 // use wasm_bindgen_futures::spawn_local;
@@ -7,14 +6,22 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 use yew::{function_component, html, Html, Properties};
 use std::collections::HashMap;
-use gloo_net::http::Request;
+use gloo_net::http::{Request, RequestCredentials};
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
 use uuid::Uuid;
-use web_sys::{HtmlElement, MouseEvent, HtmlInputElement};
-use wasm_bindgen_futures::spawn_local;
-use crate::components::{form_input::FormInput};
-use crate::api::{user_api::login};
+use web_sys::{HtmlElement, MouseEvent};
+// use wasm_bindgen_futures::spawn_local;
+use crate::pages::{register_page::RegisterPage, login_page::SignInPage};
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "tauri"])]
+    async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
 
 macro_rules! console_log {
     // Note that this is using the `log` function imported above during
@@ -58,21 +65,6 @@ pub struct AlbumDetail {
     media_url: HashMap<String, serde_json::Value>,
     descriptors: String,
     released: String,
-}
-
-
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "tauri"])]
-    async fn invoke(cmd: &str, args: JsValue) -> JsValue;
-
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-#[derive(Serialize, Deserialize)]
-struct GreetArgs<'a> {
-    name: &'a str,
 }
 
 #[derive(Properties, PartialEq)]
@@ -250,9 +242,11 @@ fn home() -> Html {
         use_effect_with_deps(move |_| {
             let items = items.clone();
             wasm_bindgen_futures::spawn_local(async move {
-                let res = Request::get(&url).send().await.unwrap();
+                let res = Request::get(&url)
+                    .credentials(RequestCredentials::Include)
+                    .send().await.unwrap();
                 let data: Vec<Album> = res.json().await.unwrap();
-                console_log!("1. {:#?}", data);
+                // console_log!("1. {:#?}", data);
                 items.set(data);
             });
             || ()
@@ -271,14 +265,17 @@ fn home() -> Html {
 fn album(props: &DetailProps) -> Html {
     let navigator = use_navigator().unwrap();
     let DetailProps { album_id } = props;
-    let url = format!("https://rymbackend-production.up.railway.app/album/{}", album_id);
+    // let url = format!("https://rymbackend-production.up.railway.app/album/{}", album_id);
+    let url = format!("http://0.0.0.0:5001/album/{}", album_id);
     let detail = use_state(|| AlbumDetail::default());
     {
         let detail = detail.clone();
         use_effect_with_deps(move |_| {
             let detail = detail.clone();
             wasm_bindgen_futures::spawn_local(async move {
-                let res = Request::get(&url).send().await.unwrap();
+                let res = Request::get(&url)
+                    .credentials(RequestCredentials::Include)
+                    .send().await.unwrap();
                 let data: AlbumDetail = res.json().await.unwrap();
                 detail.set(data);
             });
@@ -297,104 +294,6 @@ fn album(props: &DetailProps) -> Html {
             <span>{&detail.descriptors}</span>
             <span>{&detail.released}</span>
             </div>
-        </div>
-    }
-}
-
-#[function_component(RegisterPage)]
-pub fn register() -> Html {
-    html! {
-        <div class="about">
-        </div>
-    }
-}
-
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-struct LoginSchema {
-    // #[validate(
-        // length(min = 1, message = "Email is required"),
-        // email(message = "Email is invalid")
-    // )]
-    username: String,
-    // #[validate(
-        // length(min = 1, message = "Password is required"),
-        // length(min = 6, message = "Password must be at least 6 characters")
-    // )]
-    password: String,
-}
-
-fn get_input_callback(
-    name: &'static str,
-    cloned_form: UseStateHandle<LoginSchema>,
-) -> Callback<String> {
-    Callback::from(move |value| {
-        let mut data = cloned_form.deref().clone();
-        match name {
-            "username" => data.username = value,
-            "password" => data.password = value,
-            _ => (),
-        }
-        cloned_form.set(data);
-    })
-}
-
-#[function_component(SignInPage)]
-pub fn sign_in() -> Html {
-
-    let form = use_state(|| LoginSchema::default());
-    let username_input_ref = NodeRef::default();
-    let password_input_ref = NodeRef::default();
-    let navigator = use_navigator().unwrap();
-
-    let handle_username_input = get_input_callback("username", form.clone());
-    let handle_password_input = get_input_callback("password", form.clone());
-
-    let on_submit = {
-        let cloned_form = form.clone();
-        let cloned_username_input_ref = username_input_ref.clone();
-        let cloned_password_input_ref = password_input_ref.clone();
-        let cloned_navigator = navigator.clone();
-
-        Callback::from( move | event: SubmitEvent | {
-            event.prevent_default();
-
-            let form = cloned_form.clone();
-            let username_input_ref = cloned_username_input_ref.clone();
-            let password_input_ref = cloned_password_input_ref.clone();
-            let navigator = cloned_navigator.clone();
-
-            spawn_local(async move {
-                let form_data = form.clone();
-                let username_input = username_input_ref.cast::<HtmlInputElement>().unwrap();
-                let password_input = password_input_ref.cast::<HtmlInputElement>().unwrap();
-
-                username_input.set_value("");
-                password_input.set_value("");
-                let form_json = serde_json::to_string(&*form_data).unwrap();
-                let res = login(&form_json).await;
-                match res {
-                    Ok(_) => {
-                        navigator.push(&Route::Home);
-                    }
-                    Err(_) => {
-                        // set_show_alert(e.to_string(), dispatch);
-                    }
-                };
-            });
-        })
-    };
-
-    html! {
-        <div class="sign-in">
-            <form onsubmit={on_submit}>
-                <h3>{"Login Here"}</h3>
-                <label for="username">{"Username"}</label>
-                <FormInput label="Username" name="username" input_type="username" input_ref={username_input_ref} handle_onchange={handle_username_input}/>
-                <label for="password">{"Password"}</label>
-                <FormInput label="Password" name="password" input_type="password" input_ref={password_input_ref} handle_onchange={handle_password_input}/>
-                <button>{"Log In"}</button>
-            </form>
         </div>
     }
 }

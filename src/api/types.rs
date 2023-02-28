@@ -26,7 +26,7 @@ pub struct UserResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct LoginResponse {
+pub struct JsonResponse {
     pub msg: String,
     pub code: i32,
 }
