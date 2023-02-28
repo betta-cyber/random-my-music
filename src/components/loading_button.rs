@@ -18,7 +18,7 @@ pub fn loading_button_component(props: &Props) -> Html {
     let btn_color = props
         .btn_color
         .clone()
-        .unwrap_or_else(|| "bg-ct-yellow-600".to_string());
+        .unwrap_or_else(|| "bg-gray-500".to_string());
 
     html! {
     <button

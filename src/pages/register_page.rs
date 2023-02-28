@@ -175,17 +175,17 @@ pub fn register_page() -> Html {
     };
 
     html! {
-    <section class="py-8 bg-ct-blue-600 min-h-screen grid place-items-center">
+    <section class="py-8 bg-gray-600 min-h-screen grid place-items-center">
       <div class="w-full">
-        <h1 class="text-4xl xl:text-6xl text-center font-[600] text-ct-yellow-600 mb-4">
+        <h1 class="text-4xl xl:text-6xl text-center font-[600] text-gray-800 mb-4">
          {" Welcome to Random Your Music!"}
         </h1>
-        <h2 class="text-lg text-center mb-4 text-ct-dark-200">
+        <h2 class="text-lg text-center mb-4 text-gray-700">
           {"Sign Up To Get Started!"}
         </h2>
           <form
             onsubmit={on_submit}
-            class="max-w-md w-full mx-auto overflow-hidden shadow-lg bg-ct-dark-200 rounded-2xl p-8 space-y-5"
+            class="max-w-md w-full mx-auto overflow-hidden shadow-2xl bg-gray-700 bg-opacity-50 rounded-2xl p-8 space-y-5"
           >
             <FormInput label="Userame" name="name" input_ref={username_input_ref} handle_onchange={handle_username_input}  errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
             <FormInput label="Email" name="email" input_type="email" input_ref={email_input_ref} handle_onchange={handle_email_input}  errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
@@ -199,13 +199,13 @@ pub fn register_page() -> Html {
               errors={&*validation_errors}
               handle_on_input_blur={validate_input_on_blur.clone()}
             />
-            <span class="block">
+            <span class="block text-gray-800">
               {"Already have an account?"} {" "}
-            // <Link<Route> to={Route::LoginPage} classes="text-ct-blue-600">{"Login Here"}</Link<Route>>
+            <Link<Route> to={Route::SignIn} classes="text-gray-800 font-medium hover:text-blue-400">{"Login Here"}</Link<Route>>
             </span>
             <LoadingButton
               loading={store.page_loading}
-              text_color={Some("text-ct-blue-600".to_string())}
+              text_color={Some("text-gray-800".to_string())}
             >
              {" Sign Up"}
             </LoadingButton>

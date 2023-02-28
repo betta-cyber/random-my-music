@@ -7,7 +7,7 @@ use crate::components::menu::Menu;
 use crate::store::Store;
 use crate::components::{
     alert::{AlertComponent, Props as AlertProps},
-    spinner::Spinner,
+    // spinner::Spinner,
 };
 
 
@@ -33,11 +33,11 @@ pub fn app() -> Html {
     let (store, _) = use_store::<Store>();
     let message = store.alert_input.alert_message.clone();
     let show_alert = store.alert_input.show_alert;
-    let is_page_loading = store.page_loading.clone();
+    // let is_page_loading = store.page_loading.clone();
 
     let alert_props = AlertProps {
         message,
-        delay_ms: 5000,
+        delay_ms: 50000,
     };
     html! {
         <main class="container">
@@ -50,11 +50,11 @@ pub fn app() -> Html {
                         delay_ms={alert_props.delay_ms}
                      />
                 }
-                if is_page_loading {
-                    <div class="pt-4 pl-2 top-[5.5rem] fixed">
-                        <Spinner width={Some("1.5rem")} height={Some("1.5rem")} color="text-ct-yellow-600" />
-                    </div>
-                }
+                // if is_page_loading {
+                    // <div class="pt-4 pl-2 top-[5.5rem] fixed">
+                        // <Spinner width={Some("1.5rem")} height={Some("1.5rem")} color="text-ct-red-600" />
+                    // </div>
+                // }
             </BrowserRouter>
         </main>
     }

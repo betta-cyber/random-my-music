@@ -139,35 +139,35 @@ pub fn sign_in() -> Html {
     };
 
     html! {
-        <section class="bg-ct-blue-600 min-h-screen grid place-items-center">
+        <section class="bg-gray-600 min-h-screen grid place-items-center">
           <div class="w-full">
-            <h1 class="text-4xl xl:text-6xl text-center font-[600] text-ct-yellow-600 mb-4">
+            <h1 class="text-4xl xl:text-6xl text-center font-[600] text-gray-800 mb-4">
               {"Welcome Back"}
             </h1>
-            <h2 class="text-lg text-center mb-4 text-ct-dark-200">
+            <h2 class="text-lg text-center mb-4 text-gray-700">
               {"Login to have access"}
             </h2>
               <form
                 onsubmit={on_submit}
-                class="max-w-md w-full mx-auto overflow-hidden shadow-lg bg-ct-dark-200 rounded-2xl p-8 space-y-5"
+                class="max-w-md w-full mx-auto overflow-hidden shadow-2xl bg-gray-700 bg-opacity-50 rounded-2xl p-8 space-y-5"
               >
                 <FormInput label="Username" name="username" input_type="username" input_ref={username_input_ref} handle_onchange={handle_username_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
                 <FormInput label="Password" name="password" input_type="password" input_ref={password_input_ref} handle_onchange={handle_password_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()}/>
 
                 <div class="text-right">
-                  <a href="#">
+                  <a href="#" class="text-gray-800 font-medium hover:text-blue-400">
                     {"Forgot Password?"}
                   </a>
                 </div>
                 <LoadingButton
                   loading={store.page_loading}
-                  text_color={Some("text-ct-blue-600".to_string())}
+                  text_color={Some("text-gray-800".to_string())}
                 >
                   {"Login"}
                 </LoadingButton>
                 <span class="block">
-                  {"Need an account?"} {" "}
-                  <Link<Route> to={Route::Register} classes="text-ct-blue-600">{ "Sign Up Here" }</Link<Route>>
+                  <span class="text-gray-800"> {"Need an account?"} {" "} </span>
+                  <Link<Route> to={Route::Register} classes="text-gray-800 font-medium hover:text-blue-400">{ "Sign Up Here" }</Link<Route>>
                 </span>
               </form>
           </div>

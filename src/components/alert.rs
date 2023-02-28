@@ -39,8 +39,8 @@ pub fn alert_component(props: &Props) -> Html {
     html! {
     <div id="myToast" class={format!("fixed top-14 right-10 px-5 py-4 border-r-8 border-orange-500 bg-white drop-shadow-lg {}", if show_alert { "" } else { "hidden" })}>
         <p class="text-sm">
-            <span class="mr-2 inline-block px-3 py-1 rounded-full bg-blue-500 text-white font-extrabold">{"i"}</span>
-            {props.message.clone()}
+            <span class="mr-2 inline-block px-3 py-1 rounded-full bg-blue-500 font-extrabold">{"i"}</span>
+            <span class="text-red-600">{props.message.clone()}</span>
         </p>
     </div>
     }

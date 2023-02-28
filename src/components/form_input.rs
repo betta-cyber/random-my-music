@@ -55,7 +55,7 @@ pub fn form_input_component(props: &Props) -> Html {
 
     html! {
     <div>
-      <label html={props.name.clone()} class="block text-ct-blue-600 mb-3">
+      <label html={props.name.clone()} class="block text-gray-900 mb-3 font-medium">
         {props.label.clone()}
       </label>
       <input
@@ -66,9 +66,9 @@ pub fn form_input_component(props: &Props) -> Html {
         onchange={onchange}
         onblur={on_blur}
       />
-    <span class="text-red-500 text-xs pt-1 block">
+      <span class="text-red-500 text-base pt-1 block h-4">
         {error_message}
-    </span>
+      </span>
     </div>
     }
 }
