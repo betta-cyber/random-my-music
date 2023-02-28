@@ -36,40 +36,6 @@ fn AlbumCover(props: &Props) -> Html {
         }
     };
 
-    let _media_url = {
-        if album.media_url.contains_key("spotify") {
-            let spotify_url = {
-                let mut spotify = "";
-                for (k, v) in album.media_url.get("spotify").unwrap().as_object().unwrap() {
-                    match v.get("default") {
-                        Some(default) => {
-                            if default.as_bool().unwrap() {
-                                spotify = k;
-                                break
-                            }
-                        }
-                        None => {}
-                    }
-                }
-                spotify
-            };
-            format!("https://open.spotify.com/album/{}", spotify_url)
-        } else if album.media_url.contains_key("soundcloud") {
-            let soundcloud_url = {
-                let mut soundcloud = "";
-                for (_, v) in album.media_url.get("soundcloud").unwrap().as_object().unwrap() {
-                    let tmp = v.get("url").unwrap().as_str().unwrap();
-                    soundcloud = tmp;
-                    break
-                }
-                soundcloud
-            };
-            format!("https://{}", soundcloud_url)
-
-        } else {
-            format!("#")
-        }
-    };
     let detail_url = format!("/album/{}", album.id);
 
     let on_error = Callback::from(move | _e: Event | {
