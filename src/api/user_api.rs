@@ -11,11 +11,11 @@ extern "C" {
     fn log(s: &str);
 }
 
-macro_rules! console_log {
-    // Note that this is using the `log` function imported above during
-    // `bare_bones`
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-}
+// macro_rules! console_log {
+    // // Note that this is using the `log` function imported above during
+    // // `bare_bones`
+    // ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+// }
 
 static BASE_URL: &str = "http://0.0.0.0:5001";
 
@@ -34,7 +34,7 @@ pub async fn login_api(credentials: &str) -> Result<JsonResponse, String> {
     if response.status() != 200 {
         let error_response = response.json::<ErrorResponse>().await;
         if let Ok(error_response) = error_response {
-            return Err(error_response.message);
+            return Err(error_response.msg);
         } else {
             return Err(format!("API error: {}", response.status()));
         }
@@ -61,7 +61,7 @@ pub async fn register_api(credentials: &str) -> Result<JsonResponse, String> {
     if response.status() != 200 {
         let error_response = response.json::<ErrorResponse>().await;
         if let Ok(error_response) = error_response {
-            return Err(error_response.message);
+            return Err(error_response.msg);
         } else {
             return Err(format!("API error: {}", response.status()));
         }

@@ -8,8 +8,13 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::components::{form_input::FormInput};
+use yewdux::prelude::*;
+use crate::components::{form_input::FormInput, loading_button::LoadingButton};
 use crate::api::{user_api::login_api};
+use crate::store::{Store, set_show_alert, set_page_loading};
+use crate::router::Route;
+use crate::console_log;
+use crate::app::log;
 
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Validate)]
@@ -45,6 +50,7 @@ fn get_input_callback(
 #[function_component(SignInPage)]
 pub fn sign_in() -> Html {
 
+    let (store, dispatch) = use_store::<Store>();
     let form = use_state(|| LoginSchema::default());
     let username_input_ref = NodeRef::default();
     let password_input_ref = NodeRef::default();
@@ -96,6 +102,7 @@ pub fn sign_in() -> Html {
         let cloned_username_input_ref = username_input_ref.clone();
         let cloned_password_input_ref = password_input_ref.clone();
         let cloned_navigator = navigator.clone();
+        let store_dispatch = dispatch.clone();
 
         Callback::from( move | event: SubmitEvent | {
             event.prevent_default();
@@ -104,22 +111,27 @@ pub fn sign_in() -> Html {
             let username_input_ref = cloned_username_input_ref.clone();
             let password_input_ref = cloned_password_input_ref.clone();
             let navigator = cloned_navigator.clone();
+            let dispatch = store_dispatch.clone();
 
             spawn_local(async move {
                 let form_data = form.clone();
                 let username_input = username_input_ref.cast::<HtmlInputElement>().unwrap();
                 let password_input = password_input_ref.cast::<HtmlInputElement>().unwrap();
+                set_page_loading(true, dispatch.clone());
 
-                username_input.set_value("");
-                password_input.set_value("");
                 let form_json = serde_json::to_string(&*form_data).unwrap();
                 let res = login_api(&form_json).await;
                 match res {
                     Ok(_) => {
-                        // navigator.push(&Route::Home);
+                        set_page_loading(false, dispatch);
+                        navigator.push(&Route::Home);
                     }
-                    Err(_) => {
-                        // set_show_alert(e.to_string(), dispatch);
+                    Err(e) => {
+                        set_page_loading(false, dispatch.clone());
+                        console_log!("{:#?}", e);
+                        set_show_alert(e.to_string(), dispatch);
+                        username_input.set_value("");
+                        password_input.set_value("");
                     }
                 };
             });
@@ -127,15 +139,38 @@ pub fn sign_in() -> Html {
     };
 
     html! {
-        <div class="sign-in">
-            <form onsubmit={on_submit}>
-                <h3>{"Login Here"}</h3>
-                <label for="username">{"Username"}</label>
+        <section class="bg-ct-blue-600 min-h-screen grid place-items-center">
+          <div class="w-full">
+            <h1 class="text-4xl xl:text-6xl text-center font-[600] text-ct-yellow-600 mb-4">
+              {"Welcome Back"}
+            </h1>
+            <h2 class="text-lg text-center mb-4 text-ct-dark-200">
+              {"Login to have access"}
+            </h2>
+              <form
+                onsubmit={on_submit}
+                class="max-w-md w-full mx-auto overflow-hidden shadow-lg bg-ct-dark-200 rounded-2xl p-8 space-y-5"
+              >
                 <FormInput label="Username" name="username" input_type="username" input_ref={username_input_ref} handle_onchange={handle_username_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
-                <label for="password">{"Password"}</label>
-                <FormInput label="Password" name="password" input_type="password" input_ref={password_input_ref} handle_onchange={handle_password_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
-                <button>{"Log In"}</button>
-            </form>
-        </div>
+                <FormInput label="Password" name="password" input_type="password" input_ref={password_input_ref} handle_onchange={handle_password_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()}/>
+
+                <div class="text-right">
+                  <a href="#">
+                    {"Forgot Password?"}
+                  </a>
+                </div>
+                <LoadingButton
+                  loading={store.page_loading}
+                  text_color={Some("text-ct-blue-600".to_string())}
+                >
+                  {"Login"}
+                </LoadingButton>
+                <span class="block">
+                  {"Need an account?"} {" "}
+                  <Link<Route> to={Route::Register} classes="text-ct-blue-600">{ "Sign Up Here" }</Link<Route>>
+                </span>
+              </form>
+          </div>
+        </section>
     }
 }

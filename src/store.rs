@@ -22,11 +22,11 @@ pub fn set_page_loading(loading: bool, dispatch: Dispatch<Store>) {
     })
 }
 
-pub fn set_auth_user(user: Option<User>, dispatch: Dispatch<Store>) {
-    dispatch.reduce_mut(move |store| {
-        store.auth_user = user;
-    })
-}
+// pub fn set_auth_user(user: Option<User>, dispatch: Dispatch<Store>) {
+    // dispatch.reduce_mut(move |store| {
+        // store.auth_user = user;
+    // })
+// }
 
 pub fn set_show_alert(message: String, dispatch: Dispatch<Store>) {
     dispatch.reduce_mut(move |store| {
@@ -37,8 +37,8 @@ pub fn set_show_alert(message: String, dispatch: Dispatch<Store>) {
     })
 }
 
-pub fn set_hide_alert(dispatch: Dispatch<Store>) {
-    dispatch.reduce_mut(move |store| {
-        store.alert_input.show_alert = false;
-    })
-}
+// pub fn set_hide_alert(dispatch: Dispatch<Store>) {
+    // dispatch.reduce_mut(move |store| {
+        // store.alert_input.show_alert = false;
+    // })
+// }

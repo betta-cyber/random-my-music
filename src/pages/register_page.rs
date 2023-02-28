@@ -9,10 +9,11 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::components::{form_input::FormInput};
+use yewdux::prelude::*;
+use crate::components::{form_input::FormInput, loading_button::LoadingButton};
 use crate::api::{user_api::register_api};
 use crate::store::{set_show_alert, Store};
-use yewdux::prelude::*;
+use crate::router::Route;
 
 
 #[derive(Validate, Debug, Default, Clone, Serialize, Deserialize)]
@@ -157,7 +158,7 @@ pub fn register_page() -> Html {
                                     "Account registered successfully".to_string(),
                                     dispatch,
                                 );
-                                // navigator.push(&router::Route::LoginPage);
+                                navigator.push(&Route::SignIn);
                             }
                             Err(e) => {
                                 // set_page_loading(false, dispatch.clone());
@@ -202,13 +203,12 @@ pub fn register_page() -> Html {
               {"Already have an account?"} {" "}
             // <Link<Route> to={Route::LoginPage} classes="text-ct-blue-600">{"Login Here"}</Link<Route>>
             </span>
-            <button>{"Sign Up"}</button>
-            // <LoadingButton
-              // loading={store.page_loading}
-              // text_color={Some("text-ct-blue-600".to_string())}
-            // >
-             // {" Sign Up"}
-            // </LoadingButton>
+            <LoadingButton
+              loading={store.page_loading}
+              text_color={Some("text-ct-blue-600".to_string())}
+            >
+             {" Sign Up"}
+            </LoadingButton>
           </form>
       </div>
     </section>

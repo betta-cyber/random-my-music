@@ -3,6 +3,7 @@ mod components;
 mod api;
 mod pages;
 mod store;
+mod router;
 
 use app::App;
 

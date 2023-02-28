@@ -27,12 +27,12 @@ pub struct UserResponse {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JsonResponse {
-    pub msg: String,
     pub code: i32,
+    pub msg: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ErrorResponse {
-    pub status: String,
-    pub message: String,
+    pub code: i32,
+    pub msg: String,
 }
