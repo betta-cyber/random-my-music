@@ -36,7 +36,7 @@ jobs:
           # Optional version of trunk to install(eg. 'v0.16.0', 'latest')
           version: 'latest'
           
-      - run: trunk release
+      - run: trunk build --release
       
       - name: Setup Pages
         uses: actions/configure-pages@v3
