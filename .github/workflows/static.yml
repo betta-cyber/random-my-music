@@ -31,11 +31,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      - uses: jetli/trunk-action@v0.4.0
+      - name: Trunk Install
+        # You may pin to the exact commit or the version.
+        # uses: mbround18/trunk-rs@91585f95c2ec7fa564c949025b2b0f7d0a62fc47
+        uses: mbround18/trunk-rs@v0.0.1
         with:
-          # Optional version of trunk to install(eg. 'v0.16.0', 'latest')
-          version: 'latest'
-          
+          # Version if jq to use
+          jqVersion: 1.6
+          # Version of trunk to install
+          version: latest
+
       - run: trunk build --release
       
       - name: Setup Pages
