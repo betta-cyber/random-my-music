@@ -31,11 +31,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      - uses: jetli/trunk-action@v0.4.0
+      - uses: actions-rs/toolchain@v1
         with:
-          # Optional version of trunk to install(eg. 'v0.16.0', 'latest')
-          version: 'latest'
-          
+          toolchain: stable
+      - run: rustup target add wasm32-unknown-unknown
+      - run: cargo install trunk
       - run: trunk build --release
       
       - name: Setup Pages
