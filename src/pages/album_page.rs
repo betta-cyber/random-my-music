@@ -3,7 +3,7 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 use gloo_net::http::{Request, RequestCredentials};
 use std::collections::HashMap;
-// use crate::router::Route;
+use crate::components::media_link::MediaLink;
 
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Default)]
@@ -80,22 +80,32 @@ pub fn album(props: &DetailProps) -> Html {
     };
 
     html! {
-        <div>
-            <div class="w-40 h-40">
-                <img src={detail.cover.clone()} />
+        <div class="block bg-blue-800 w-auto h-screen">
+            <div class="absolute inset-y-0 left-0 w-1/4" id="container_left">
+                <div class="m-4">
+                    <img class="w-full" src={detail.cover.clone()} />
+                    <div class="media-link h-40 object-center flex">
+                        <MediaLink media_data={detail.media_url.clone()}></MediaLink>
+                    </div>
+                </div>
             </div>
-            <div class="">
-                <div class="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
-                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{&detail.name}</h1>
-                </div>
-                <div class="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
-                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{&detail.artist}</h1>
-                </div>
-                <div class="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
-                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{&detail.descriptors}</h1>
-                </div>
-                <div class="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
-                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{&detail.released}</h1>
+            <div class="text-left absolute inset-y-0 right-0 w-3/4" id="container_right">
+                <div class="width-full album_info_outer m-4">
+                    <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
+                        <h1 class="col-span-3 m-2 text-left float-left text-4xl font-bold tracking-tight text-gray-900 sm:text-4xl">{&detail.name}</h1>
+                    </div>
+                    <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
+                        <span class="col-span-1 m-2 float-left text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Artist"}</span>
+                        <span class="col-span-2 m-2 float-left text-2xl tracking-tight text-gray-900 sm:text-3xl">{&detail.artist}</span>
+                    </div>
+                    <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
+                        <span class="col-span-1 m-2 float-left text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Released"}</span>
+                        <span class="col-span-2 m-2 float-left text-2xl tracking-tight text-gray-900 sm:text-3xl">{&detail.released}</span>
+                    </div>
+                    <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8 ">
+                        <span class="col-span-1 m-2 float-left text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Descriptors"}</span>
+                        <span class="col-span-2 break-all m-2 float-left text-2xl tracking-tight text-gray-900 sm:text-3xl">{&detail.descriptors}</span>
+                    </div>
                 </div>
             </div>
         </div>

@@ -32,11 +32,11 @@ fn AlbumCover(props: &Props) -> Html {
         if album.cover.is_empty() {
             format!("/static/default.png")
         } else {
-            format!("{}", album.cover)
+            format!("{}-cover", album.cover)
         }
     };
 
-    let detail_url = format!("/album/{}", album.id);
+    let detail_url = format!("/#/album/{}", album.id);
 
     let on_error = Callback::from(move | _e: Event | {
         // console_log!("{:#?}", e);
@@ -44,11 +44,11 @@ fn AlbumCover(props: &Props) -> Html {
     });
 
     html! {
-        <a href={detail_url} target="_blank">
-            <div class="album">
-                <img src={img_src} onerror={on_error} />
-            </div>
-        </a>
+        <div class="album">
+            <a href={detail_url} target="_blank">
+                <img loading="lazy" src={img_src} onerror={on_error} />
+            </a>
+        </div>
     }
 }
 

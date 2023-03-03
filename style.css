@@ -27,6 +27,7 @@ body {
 
 .container {
   margin: 0;
+  /* height: auto; */
   /* padding-top: 10vh; */
   /* display: flex; */
   text-align: center;
@@ -135,7 +136,7 @@ img {
   /* float: left; */
   overflow: hidden;
   width: 100%;
-  height: 100%;
+  /* height: 100%; */
 }
 
 @media screen and (min-width: 960px) {
@@ -157,7 +158,7 @@ img {
     pointer-events: None !important;
     overflow: hidden;
     width: 100%;
-    height: 100%;
+    /* height: 100%; */
   }
 }
 
@@ -252,4 +253,47 @@ img {
   font-weight: 300;
   text-indent: 40px;
   line-height: 2;
+}
+
+
+.media-link {
+  margin: auto;
+  width: fit-content;
+}
+
+.ui_media_link_btn_youtube {
+  background-image: url(/public/media_link/youtube32x32.svg);
+  background-position: center center;
+  background-repeat: no-repeat;
+  border: none;
+  background-size: 100% 100%;
+}
+
+.ui_media_link_btn_spotify {
+    background-image: url(/public/media_link/spotifyDark32x32.svg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: none;
+    background-size: 100% 100%;
+}
+
+.ui_media_link_btn_bandcamp {
+    background-image: url(/public/media_link/bandcamp32x32.svg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: none;
+    background-size: 100% 100%;
+}
+
+.ui_media_link_btn_applemusic {
+    background-image: url(/public/media_link/itunes32x32.svg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: none;
+    background-size: 100% 100%;
+}
+
+.ui_media_link_btn {
+    width: 2em;
+    height: 2em;
 }
