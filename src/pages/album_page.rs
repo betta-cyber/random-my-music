@@ -1,21 +1,10 @@
-use serde::Deserialize;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use gloo_net::http::{Request, RequestCredentials};
-use std::collections::HashMap;
 use crate::components::media_link::MediaLink;
+use crate::api::types::AlbumDetail;
+use crate::api::user_api::album_detail_api;
 
-
-#[derive(Debug, Clone, PartialEq, Deserialize, Default)]
-pub struct AlbumDetail {
-    id: i32,
-    name: String,
-    artist: String,
-    cover: String,
-    media_url: HashMap<String, serde_json::Value>,
-    descriptors: String,
-    released: String,
-}
 
 #[derive(Properties, PartialEq)]
 pub struct DetailProps {
@@ -25,59 +14,25 @@ pub struct DetailProps {
 #[function_component(AlbumPage)]
 pub fn album(props: &DetailProps) -> Html {
     let _navigator = use_navigator().unwrap();
-    let DetailProps { album_id } = props;
-    // let url = format!("https://rymbackend-production.up.railway.app/album/{}", album_id);
-    let url = format!("http://0.0.0.0:5001/album/{}", album_id);
+    let album_id = props.album_id.clone();
     let detail = use_state(|| AlbumDetail::default());
     {
         let detail = detail.clone();
         use_effect_with_deps(move |_| {
             let detail = detail.clone();
+            // let album_id = album_id.clone();
             wasm_bindgen_futures::spawn_local(async move {
-                let res = Request::get(&url)
-                    .credentials(RequestCredentials::Include)
-                    .send().await.unwrap();
-                let data: AlbumDetail = res.json().await.unwrap();
-                detail.set(data);
+                let album_id = album_id.clone();
+                match album_detail_api(&album_id).await {
+                    Ok(data) => {
+                        detail.set(data);
+                    }
+                    Err(_) => {}
+                }
             });
             || ()
         }, ());
     }
-
-    let _media_url = {
-        if detail.media_url.contains_key("spotify") {
-            let spotify_url = {
-                let mut spotify = "";
-                for (k, v) in detail.media_url.get("spotify").unwrap().as_object().unwrap() {
-                    match v.get("default") {
-                        Some(default) => {
-                            if default.as_bool().unwrap() {
-                                spotify = k;
-                                break
-                            }
-                        }
-                        None => {}
-                    }
-                }
-                spotify
-            };
-            format!("https://open.spotify.com/album/{}", spotify_url)
-        } else if detail.media_url.contains_key("soundcloud") {
-            let soundcloud_url = {
-                let mut soundcloud = "";
-                for (_, v) in detail.media_url.get("soundcloud").unwrap().as_object().unwrap() {
-                    let tmp = v.get("url").unwrap().as_str().unwrap();
-                    soundcloud = tmp;
-                    break
-                }
-                soundcloud
-            };
-            format!("https://{}", soundcloud_url)
-
-        } else {
-            format!("#")
-        }
-    };
 
     html! {
         <div class="block bg-blue-800 w-auto h-screen">

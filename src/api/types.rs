@@ -1,4 +1,5 @@
 // use chrono::prelude::*;
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 #[allow(non_snake_case)]
@@ -35,4 +36,24 @@ pub struct JsonResponse {
 pub struct ErrorResponse {
     pub code: i32,
     pub msg: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct Album {
+    pub id: i32,
+    pub name: String,
+    pub artist: String,
+    pub cover: String,
+    pub media_url: HashMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Default)]
+pub struct AlbumDetail {
+    pub id: i32,
+    pub name: String,
+    pub artist: String,
+    pub cover: String,
+    pub media_url: HashMap<String, serde_json::Value>,
+    pub descriptors: String,
+    pub released: String,
 }

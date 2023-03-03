@@ -1,21 +1,10 @@
-use serde::Deserialize;
 use yew::prelude::*;
 // use yew_router::prelude::*;
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
-use gloo_net::http::{Request, RequestCredentials};
 use uuid::Uuid;
-use std::collections::HashMap;
-
-
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct Album {
-    id: i32,
-    name: String,
-    artist: String,
-    cover: String,
-    media_url: HashMap<String, serde_json::Value>,
-}
+use crate::api::user_api::today_album_api;
+use crate::api::types::Album;
 
 
 #[derive(Properties, PartialEq)]
@@ -65,8 +54,6 @@ pub fn home() -> Html {
             client_id
         }
     };
-    // let url = format!("https://rymbackend-production.up.railway.app/today?client_id={}", client_id);
-    let url = format!("http://0.0.0.0:5001/today?client_id={}", client_id);
 
     let items = use_state(|| vec![]);
     {
@@ -75,12 +62,12 @@ pub fn home() -> Html {
         use_effect_with_deps(move |_| {
             let items = items.clone();
             wasm_bindgen_futures::spawn_local(async move {
-                let res = Request::get(&url)
-                    .credentials(RequestCredentials::Include)
-                    .send().await.unwrap();
-                let data: Vec<Album> = res.json().await.unwrap();
-                // console_log!("1. {:#?}", data);
-                items.set(data);
+                match today_album_api(&client_id).await  {
+                    Ok(res) => {
+                        items.set(res);
+                    }
+                    Err(_) => {}
+                }
             });
             || ()
         }, ());
