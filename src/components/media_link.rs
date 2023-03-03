@@ -73,6 +73,46 @@ pub fn MediaLink(props: &Props) -> Html {
                     media_class: "ui_media_link_btn ui_media_link_btn_applemusic".to_string()
                 })
             }
+            "bandcamp" => {
+                let mut url = "";
+                for (kk, vv) in v.as_object().unwrap() {
+                    match vv.get("default") {
+                        Some(default) => {
+                            if default.as_bool().unwrap() {
+                                url = kk;
+                            }
+                        },
+                        None => {}
+                    };
+                };
+                let link = format!("https://{}", url);
+                Some(Link {
+                    media_link: link,
+                    title: "Bandcamp".to_string(),
+                    media_class: "ui_media_link_btn ui_media_link_btn_bandcamp".to_string()
+                })
+            }
+            "youtube" => {
+                let mut url = "";
+                for (kk, vv) in v.as_object().unwrap() {
+                    match vv.get("default") {
+                        Some(default) => {
+                            if default.as_bool().unwrap() {
+                                url = kk;
+                            }
+                        },
+                        None => {}
+                    };
+                };
+                let link = format!("https://www.youtube.com/watch?v={}", url);
+                Some(Link {
+                    media_link: link,
+                    title: "YouTube".to_string(),
+                    media_class: "ui_media_link_btn ui_media_link_btn_youtube".to_string()
+                })
+
+            }
+            // https://www.youtube.com/watch?v=-Kqf6vtQmPQ
             &_ => { None }
         };
         console_log!("{:#?}", a);

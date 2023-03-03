@@ -7,7 +7,7 @@ use crate::components::menu::Menu;
 use crate::store::Store;
 use crate::components::{
     alert::{AlertComponent, Props as AlertProps},
-    // spinner::Spinner,
+    spinner::Spinner,
 };
 
 
@@ -33,28 +33,30 @@ pub fn app() -> Html {
     let (store, _) = use_store::<Store>();
     let message = store.alert_input.alert_message.clone();
     let show_alert = store.alert_input.show_alert;
-    // let is_page_loading = store.page_loading.clone();
+    let is_page_loading = store.page_loading.clone();
 
     let alert_props = AlertProps {
         message,
         delay_ms: 50000,
     };
     html! {
-        <main class="container">
+        <main class="container max-w-full">
             <Menu />
             <HashRouter>
-                <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
                 if show_alert {
                     <AlertComponent
                         message={alert_props.message}
                         delay_ms={alert_props.delay_ms}
                      />
                 }
-                // if is_page_loading {
-                    // <div class="pt-4 pl-2 top-[5.5rem] fixed">
-                        // <Spinner width={Some("1.5rem")} height={Some("1.5rem")} color="text-ct-red-600" />
-                    // </div>
-                // }
+                if is_page_loading {
+                    <div class="loading">
+                        <Spinner width={Some("1.8rem")} height={Some("1.8rem")} color="text-ct-red-600" />
+                    </div>
+                }
+                <div hidden={is_page_loading}>
+                    <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
+                </div>
             </HashRouter>
         </main>
     }

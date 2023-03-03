@@ -22,7 +22,7 @@ pub fn spinner_component(props: &Props) -> Html {
     let bg_color = props
         .bg_color
         .clone()
-        .unwrap_or_else(|| "fill-blue-600".to_string());
+        .unwrap_or_else(|| "fill-blue-500".to_string());
 
     html! {
     <svg

@@ -1,8 +1,10 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
+use yewdux::prelude::*;
 use crate::components::media_link::MediaLink;
 use crate::api::types::AlbumDetail;
 use crate::api::user_api::album_detail_api;
+use crate::store::{Store, set_page_loading};
 
 
 #[derive(Properties, PartialEq)]
@@ -12,19 +14,24 @@ pub struct DetailProps {
 
 #[function_component(AlbumPage)]
 pub fn album(props: &DetailProps) -> Html {
+    let (_, dispatch) = use_store::<Store>();
     let _navigator = use_navigator().unwrap();
     let album_id = props.album_id.clone();
+
     let detail = use_state(|| AlbumDetail::default());
     {
+        let store_dispatch = dispatch.clone();
         let detail = detail.clone();
         use_effect_with_deps(move |_| {
             let detail = detail.clone();
-            // let album_id = album_id.clone();
             wasm_bindgen_futures::spawn_local(async move {
                 let album_id = album_id.clone();
+                let dispatch = store_dispatch.clone();
+                set_page_loading(true, dispatch.clone());
                 match album_detail_api(&album_id).await {
                     Ok(data) => {
                         detail.set(data);
+                        set_page_loading(false, dispatch);
                     }
                     Err(_) => {}
                 }
