@@ -81,7 +81,7 @@ pub fn album(props: &DetailProps) -> Html {
 
     html! {
         <div class="block bg-blue-800 w-auto h-screen">
-            <div class="absolute inset-y-0 left-0 w-1/4" id="container_left">
+            <div class="absolute inset-y-0 left-0 w-2/6" id="container_left">
                 <div class="m-4">
                     <img class="w-full" src={detail.cover.clone()} />
                     <div class="media-link h-40 object-center flex">
@@ -89,7 +89,7 @@ pub fn album(props: &DetailProps) -> Html {
                     </div>
                 </div>
             </div>
-            <div class="text-left absolute inset-y-0 right-0 w-3/4" id="container_right">
+            <div class="text-left absolute inset-y-0 right-0 w-4/6" id="container_right">
                 <div class="width-full album_info_outer m-4">
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
                         <h1 class="col-span-3 m-2 text-left float-left text-4xl font-bold tracking-tight text-gray-900 sm:text-4xl">{&detail.name}</h1>

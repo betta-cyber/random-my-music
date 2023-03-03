@@ -294,6 +294,8 @@ img {
 }
 
 .ui_media_link_btn {
-    width: 2em;
-    height: 2em;
+    width: 5vh;
+    height: 5vh;
+    margin: 0.3vh;
+    border-radius: 1vh;
 }
