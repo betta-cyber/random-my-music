@@ -26,7 +26,7 @@ validator = { version = "0.16.0", features = ["derive"] }
 yewdux = "0.9.2"
 
 [workspace]
-members = ["src-tauri"]
+members = ["src-tauri", "rym_backend"]
 
 [profile.release]
 opt-level = 'z'

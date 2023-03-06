@@ -2,7 +2,7 @@
 target = "./index.html"
 
 [watch]
-ignore = ["./src-tauri"]
+ignore = ["./src-tauri", "./rym_backend"]
 
 [serve]
 address = "0.0.0.0"
@@ -13,3 +13,7 @@ open = false
 stage = "post_build"
 command = "sh"
 command_arguments = ["-c", "npx tailwindcss -i ./styles/tailwind.css -o ./dist/.stage/index.css"]
+
+[[proxy]]
+rewrite = "/api/v1/"
+backend = "http://0.0.0.0:5001/"

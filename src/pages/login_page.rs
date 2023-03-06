@@ -11,10 +11,10 @@ use yew_router::prelude::*;
 use yewdux::prelude::*;
 use crate::components::{form_input::FormInput, loading_button::LoadingButton};
 use crate::api::{user_api::login_api};
-use crate::store::{Store, set_show_alert, set_page_loading};
+use crate::store::{Store, set_show_alert, set_page_loading, set_auth_user};
 use crate::router::Route;
-use crate::console_log;
-use crate::app::log;
+use crate::api::types::User;
+// use crate::{app::log, console_log};
 
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Validate)]
@@ -122,13 +122,19 @@ pub fn sign_in() -> Html {
                 let form_json = serde_json::to_string(&*form_data).unwrap();
                 let res = login_api(&form_json).await;
                 match res {
-                    Ok(_) => {
+                    Ok(data) => {
+                        let serialized = serde_json::to_string(&data.data).unwrap();
+                        match serde_json::from_str::<User>(&serialized) {
+                            Ok(user) => {
+                                set_auth_user(Some(user), dispatch.clone());
+                            }
+                            Err(_) => {}
+                        };
                         set_page_loading(false, dispatch);
                         navigator.push(&Route::Home);
                     }
                     Err(e) => {
                         set_page_loading(false, dispatch.clone());
-                        console_log!("{:#?}", e);
                         set_show_alert(e.to_string(), dispatch);
                         username_input.set_value("");
                         password_input.set_value("");

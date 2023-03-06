@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use yewdux::prelude::*;
 
 use crate::api::types::User;
+// use crate::{app::log, console_log};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone)]
 pub struct AlertInput {
@@ -22,11 +23,11 @@ pub fn set_page_loading(loading: bool, dispatch: Dispatch<Store>) {
     })
 }
 
-// pub fn set_auth_user(user: Option<User>, dispatch: Dispatch<Store>) {
-    // dispatch.reduce_mut(move |store| {
-        // store.auth_user = user;
-    // })
-// }
+pub fn set_auth_user(user: Option<User>, dispatch: Dispatch<Store>) {
+    dispatch.reduce_mut(move |store| {
+        store.auth_user = user;
+    })
+}
 
 pub fn set_show_alert(message: String, dispatch: Dispatch<Store>) {
     dispatch.reduce_mut(move |store| {

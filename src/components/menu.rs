@@ -1,11 +1,13 @@
 use web_sys::HtmlElement;
 use yew::prelude::*;
-// use yew_router::prelude::Link;
-// use crate::router::Route;
+use yewdux::prelude::*;
+use crate::store::Store;
 
 
 #[function_component]
 pub fn Menu() -> Html {
+    let (store, _) = use_store::<Store>();
+    let user = store.auth_user.clone();
 
     let onclick = Callback::from(|e: MouseEvent| {
         if let Some(_) = e.target_dyn_into::<HtmlElement>() {
@@ -37,10 +39,15 @@ pub fn Menu() -> Html {
         <div class="menu-item">
             <div class="">
                 <ul>
-                  <li><a href="/" >{"Home"}</a></li>
-                  <li><a href="/#/register" onclick={onclick.clone()}>{"Sign up"}</a></li>
-                  <li><a href="/#/sign_in" onclick={onclick.clone()}>{"Sign in"}</a></li>
-                  <li><a href="/#/about" onclick={onclick}>{"About"}</a></li>
+                    <li><a href="/" >{"Home"}</a></li>
+                    if let Some(user) = user {
+                        <li><a href="/#/profile" onclick={onclick.clone()}>{ user.username }</a></li>
+                        <li><a href="/#/logout" onclick={onclick.clone()}>{"Sign out"}</a></li>
+                    } else {
+                        <li><a href="/#/sign_in" onclick={onclick.clone()}>{"Sign in"}</a></li>
+                        <li><a href="/#/register" onclick={onclick.clone()}>{"Sign up"}</a></li>
+                    }
+                    <li><a href="/#/about" onclick={onclick}>{"About"}</a></li>
                 </ul>
             </div>
         </div>

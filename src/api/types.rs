@@ -5,14 +5,9 @@ use serde::{Deserialize, Serialize};
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq, Clone)]
 pub struct User {
-    pub id: String,
-    pub name: String,
+    pub id: i32,
     pub email: String,
-    pub role: String,
-    pub photo: String,
-    pub verified: bool,
-    // pub createdAt: DateTime<Utc>,
-    // pub updatedAt: DateTime<Utc>,
+    pub username: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -30,6 +25,7 @@ pub struct UserResponse {
 pub struct JsonResponse {
     pub code: i32,
     pub msg: String,
+    pub data: HashMap<String, serde_json::Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -47,6 +43,12 @@ pub struct Album {
     pub media_url: HashMap<String, serde_json::Value>,
 }
 
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct Genre {
+    pub genre: String,
+    pub genre_type: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize, Default)]
 pub struct AlbumDetail {
     pub id: i32,
@@ -56,4 +58,7 @@ pub struct AlbumDetail {
     pub media_url: HashMap<String, serde_json::Value>,
     pub descriptors: String,
     pub released: String,
+    pub language: String,
+    pub rate: String,
+    pub genres: Vec<Genre>
 }

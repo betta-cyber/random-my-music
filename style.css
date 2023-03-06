@@ -161,7 +161,7 @@ img {
   img {
     pointer-events: None !important;
     overflow: hidden;
-    width: 100%;
+    width: 12.5vw;
     /* height: 100%; */
   }
 }

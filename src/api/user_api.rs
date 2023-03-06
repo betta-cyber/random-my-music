@@ -1,22 +1,9 @@
 use super::types::{ErrorResponse, JsonResponse, Album, AlbumDetail};
 use gloo_net::http::{Request, RequestCredentials};
-use wasm_bindgen::prelude::*;
+// use crate::{app::log, console_log};
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "tauri"])]
-    async fn invoke(cmd: &str, args: JsValue) -> JsValue;
 
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-// macro_rules! console_log {
-    // // Note that this is using the `log` function imported above during
-    // // `bare_bones`
-    // ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-// }
-
+// static BASE_URL: &str = "/api/v1";
 // static BASE_URL: &str = "http://0.0.0.0:5001";
 static BASE_URL: &str = "https://rymbackend-production.up.railway.app";
 
@@ -42,6 +29,7 @@ pub async fn login_api(credentials: &str) -> Result<JsonResponse, String> {
     }
 
     let res_json = response.json::<JsonResponse>().await;
+    // console_log!("{:#?}", res_json);
     match res_json {
         Ok(data) => Ok(data),
         Err(_) => Err("Failed to parse response".to_string()),
