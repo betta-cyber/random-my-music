@@ -16,4 +16,4 @@ command_arguments = ["-c", "npx tailwindcss -i ./styles/tailwind.css -o ./dist/.
 
 [[proxy]]
 rewrite = "/api/v1/"
-backend = "http://0.0.0.0:5001/"
+backend = "http://0.0.0.0:5001/api/v1/"

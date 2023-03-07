@@ -26,7 +26,7 @@ fn AlbumCover(props: &Props) -> Html {
         }
     };
 
-    let detail_url = format!("/#/album/{}", album.id);
+    let detail_url = format!("/album/{}", album.id);
 
     let on_error = Callback::from(move | _e: Event | {
         // console_log!("{:#?}", e);

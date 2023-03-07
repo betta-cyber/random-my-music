@@ -64,7 +64,7 @@ pub fn album(props: &DetailProps) -> Html {
             <div class="md:absolute text-left md:bottom-0 md:w-full lg:right-0 lg:inset-y-0 lg:w-4/6" id="container_right">
                 <div class="width-full album_info_outer m-4">
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
-                        <h3 class="col-span-3 m-2 text-left float-left text-3xl font-bold tracking-tight text-gray-900 sm:text-3xl">{&detail.name}</h3>
+                        <h3 class="col-span-3 m-2 text-left float-left text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{&detail.name}</h3>
                     </div>
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
                         <span class="col-span-1 break-all m-2 float-left text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Artist"}</span>

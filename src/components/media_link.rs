@@ -53,9 +53,9 @@ pub fn MediaLink(props: &Props) -> Html {
                 for (kk, vv) in v.as_object().unwrap() {
                     let a: Option<String> = match vv.get("default") {
                         Some(default) => {
-                            if default.as_bool().unwrap() {
+                            if default.as_bool().unwrap_or(false) {
                                 applemusic = kk;
-                                Some(vv.get("album").clone().unwrap().to_string())
+                                Some(vv.get("album").unwrap().as_str().unwrap().to_string())
                             } else {
                                 None
                             }
@@ -64,14 +64,21 @@ pub fn MediaLink(props: &Props) -> Html {
                             None
                         }
                     };
-                    album = a.clone();
+                    if let Some(a) = a {
+                        album = Some(a);
+                    }
                 };
-                let link = format!("https://geo.music.apple.com/gb/album/{}/{}", album.unwrap(), applemusic);
-                Some(Link {
-                    media_link: link,
-                    title: "Apple Music".to_string(),
-                    media_class: "ui_media_link_btn ui_media_link_btn_applemusic".to_string()
-                })
+                match album {
+                    Some(album) => {
+                        let link = format!("https://geo.music.apple.com/gb/album/{}/{}", album.as_str(), applemusic);
+                        Some(Link {
+                            media_link: link,
+                            title: "Apple Music".to_string(),
+                            media_class: "ui_media_link_btn ui_media_link_btn_applemusic".to_string()
+                        })
+                    }
+                    None => {None}
+                }
             }
             "bandcamp" => {
                 let mut url = "";

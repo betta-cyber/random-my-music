@@ -44,7 +44,7 @@ pub struct Album {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct Genre {
+pub struct AlbumGenre {
     pub genre: String,
     pub genre_type: String,
 }
@@ -60,5 +60,12 @@ pub struct AlbumDetail {
     pub released: String,
     pub language: String,
     pub rate: String,
-    pub genres: Vec<Genre>
+    pub genres: Vec<AlbumGenre>
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct Genre {
+    pub id: i32,
+    pub name: String,
+    pub key_name: String,
 }

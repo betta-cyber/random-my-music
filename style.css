@@ -251,12 +251,12 @@ img {
 .about {
   text-align: left;
   display: block;
-  width: 800px;
   margin: 100px auto;
   font-size: 20px;
   font-weight: 300;
   text-indent: 40px;
   line-height: 2;
+  padding: 40px;
 }
 
 

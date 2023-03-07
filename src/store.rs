@@ -11,6 +11,7 @@ pub struct AlertInput {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq, Store)]
+#[store(storage = "local", storage_tab_sync)]
 pub struct Store {
     pub auth_user: Option<User>,
     pub page_loading: bool,

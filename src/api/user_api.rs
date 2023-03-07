@@ -1,11 +1,11 @@
-use super::types::{ErrorResponse, JsonResponse, Album, AlbumDetail};
+use super::types::{ErrorResponse, JsonResponse, Album, AlbumDetail, Genre, User};
 use gloo_net::http::{Request, RequestCredentials};
 // use crate::{app::log, console_log};
 
 
-// static BASE_URL: &str = "/api/v1";
+static BASE_URL: &str = "/api/v1";
 // static BASE_URL: &str = "http://0.0.0.0:5001";
-static BASE_URL: &str = "https://rymbackend-production.up.railway.app";
+// static BASE_URL: &str = "https://rymbackend-production.up.railway.app";
 
 pub async fn login_api(credentials: &str) -> Result<JsonResponse, String> {
     let response = match Request::post(&format!("{}/login", BASE_URL))
@@ -118,5 +118,78 @@ pub async fn album_detail_api(album_id: &str) -> Result<AlbumDetail, String> {
     match res_data {
         Ok(data) => Ok(data),
         Err(_) => Err("Failed to parse response".to_string()),
+    }
+}
+
+
+pub async fn user_info_api() -> Result<User, String> {
+    let url = format!("{}/user", BASE_URL);
+    let response = match Request::get(&url)
+        .header("Content-Type", "application/json")
+        .credentials(RequestCredentials::Include)
+        .send()
+        .await
+    {
+        Ok(res) => res,
+        Err(_) => return Err("Failed to make request".to_string()),
+    };
+
+    if response.status() != 200 {
+        let error_response = response.json::<ErrorResponse>().await;
+        if let Ok(error_response) = error_response {
+            return Err(error_response.msg);
+        } else {
+            return Err(format!("API error: {}", response.status()));
+        }
+    }
+
+    let res_data = response.json::<JsonResponse>().await;
+    match res_data {
+        Ok(data) => {
+            let serialized = serde_json::to_string(&data.data).unwrap();
+            match serde_json::from_str::<User>(&serialized) {
+                Ok(user) => {
+                    Ok(user)
+                },
+                Err(_) => Err("Failed to parse response".to_string()),
+            }
+        },
+        Err(_) => Err("Failed to parse response".to_string())
+    }
+}
+
+pub async fn genres_api() -> Result<Vec<Genre>, String> {
+    let url = format!("{}/genres", BASE_URL);
+    let response = match Request::get(&url)
+        .header("Content-Type", "application/json")
+        .credentials(RequestCredentials::Include)
+        .send()
+        .await
+    {
+        Ok(res) => res,
+        Err(_) => return Err("Failed to make request".to_string()),
+    };
+
+    if response.status() != 200 {
+        let error_response = response.json::<ErrorResponse>().await;
+        if let Ok(error_response) = error_response {
+            return Err(error_response.msg);
+        } else {
+            return Err(format!("API error: {}", response.status()));
+        }
+    }
+
+    let res_data = response.json::<JsonResponse>().await;
+    match res_data {
+        Ok(data) => {
+            let serialized = serde_json::to_string(&data.data).unwrap();
+            match serde_json::from_str::<Vec<Genre>>(&serialized) {
+                Ok(genres) => {
+                    Ok(genres)
+                },
+                Err(_) => Err("Failed to parse response".to_string()),
+            }
+        },
+        Err(_) => Err("Failed to parse response".to_string())
     }
 }

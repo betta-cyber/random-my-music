@@ -42,7 +42,7 @@ pub fn app() -> Html {
     html! {
         <main class="container max-w-full">
             <Menu />
-            <HashRouter>
+            <BrowserRouter>
                 if show_alert {
                     <AlertComponent
                         message={alert_props.message}
@@ -57,7 +57,7 @@ pub fn app() -> Html {
                 <div hidden={is_page_loading}>
                     <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
                 </div>
-            </HashRouter>
+            </BrowserRouter>
         </main>
     }
 }
