@@ -1,6 +1,7 @@
 use super::types::{ErrorResponse, JsonResponse, Album, AlbumDetail, Genre, User};
 use gloo_net::http::{Request, RequestCredentials};
-// use crate::{app::log, console_log};
+#[allow(unused)]
+use crate::{app::log, console_log};
 
 
 static BASE_URL: &str = "/api/v1";
@@ -182,7 +183,46 @@ pub async fn genres_api() -> Result<Vec<Genre>, String> {
     let res_data = response.json::<JsonResponse>().await;
     match res_data {
         Ok(data) => {
-            let serialized = serde_json::to_string(&data.data).unwrap();
+            let serialized = serde_json::to_string(&data.data.get("genres")).unwrap();
+            match serde_json::from_str::<Vec<Genre>>(&serialized) {
+                Ok(genres) => {
+                    Ok(genres)
+                },
+                Err(_) => Err("Failed to parse response".to_string()),
+            }
+        },
+        Err(_) => Err("Failed to parse response".to_string())
+    }
+}
+
+
+pub async fn user_genres_api(json: &str) -> Result<Vec<Genre>, String> {
+    let url = format!("{}/user_genres", BASE_URL);
+    let response = match Request::post(&url)
+        .header("Content-Type", "application/json")
+        .body(json)
+        .credentials(RequestCredentials::Include)
+        .send()
+        .await
+    {
+        Ok(res) => res,
+        Err(_) => return Err("Failed to make request".to_string()),
+    };
+
+    if response.status() != 200 {
+        let error_response = response.json::<ErrorResponse>().await;
+        if let Ok(error_response) = error_response {
+            return Err(error_response.msg);
+        } else {
+            return Err(format!("API error: {}", response.status()));
+        }
+    }
+
+    let res_data = response.json::<JsonResponse>().await;
+    console_log!("{:#?}", res_data);
+    match res_data {
+        Ok(data) => {
+            let serialized = serde_json::to_string(&data.data.get("genres")).unwrap();
             match serde_json::from_str::<Vec<Genre>>(&serialized) {
                 Ok(genres) => {
                     Ok(genres)

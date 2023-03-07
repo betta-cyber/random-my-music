@@ -12,8 +12,8 @@ pub fn Menu() -> Html {
     let onclick = Callback::from(|e: MouseEvent| {
         if let Some(_) = e.target_dyn_into::<HtmlElement>() {
             let window = web_sys::window().expect("no global `window` exists");
-
             let m = window.document().unwrap().get_elements_by_class_name("menu").item(0).unwrap();
+
             if m.class_name() == "menu" {
                 m.set_class_name("menu change");
             } else if m.class_name() == "menu change" {
