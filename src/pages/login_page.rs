@@ -158,7 +158,7 @@ pub fn sign_in() -> Html {
                 class="max-w-md w-full mx-auto overflow-hidden shadow-2xl bg-gray-700 bg-opacity-50 rounded-2xl p-8 space-y-5"
               >
                 <FormInput label="Username" name="username" input_type="username" input_ref={username_input_ref} handle_onchange={handle_username_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
-                <FormInput label="Password" name="password" input_type="password" input_ref={password_input_ref} handle_onchange={handle_password_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()}/>
+                <FormInput label="Password" name="password" input_type="password" input_ref={password_input_ref} handle_onchange={handle_password_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
 
                 <div class="text-right">
                   <a href="#" class="text-gray-800 font-medium hover:text-blue-400">

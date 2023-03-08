@@ -21,7 +21,7 @@ use sha3::{Digest, Sha3_256};
 use sqlx::mysql::{MySql, MySqlPool, MySqlPoolOptions};
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{CorsLayer, Any};
 use tower_http::services::{ServeDir, ServeFile};
 use tower_http::set_header::SetResponseHeaderLayer;
 
@@ -32,6 +32,7 @@ struct MyShared {
     redis: Client,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 struct RequireAuth {
     user: Option<String>,
@@ -85,12 +86,12 @@ async fn main() {
     .expect("can't connect to redis");
 
     let cors = CorsLayer::new()
-                .allow_origin("http://0.0.0.0:5001".parse::<HeaderValue>().unwrap())
-                // .allow_origin("https://0.0.0.0:5001".parse::<HeaderValue>().unwrap())
+                // .allow_origin("http://0.0.0.0:5001".parse::<HeaderValue>().unwrap())
+                .allow_origin(Any)
                 // .allow_origin("https://randomyourmusic.fun".parse::<HeaderValue>().unwrap())
                 .allow_methods([Method::GET, Method::POST])
                 .allow_headers([header::CONTENT_TYPE])
-                .allow_credentials(true);
+                .allow_credentials(false);
 
     let store = MemoryStore::new();
     let secret = b"zgn7ryv4yuzghfzr48903m77qm4pz4xilh10toep1pgxhebkzvp2nfmodwxv7ug2";
@@ -100,11 +101,11 @@ async fn main() {
     let api = Router::new()
         .route("/register", post(register))
         .route("/login", post(login))
+        .route("/user_config", post(user_config))
         .route("/user", get(user_info))
         .route("/today", get(get_today_album))
         .route("/album/:album_id", get(get_album_detail))
         .route("/genres", get(genres))
-        .route("/user_genres", post(user_genres))
         .layer(cors)
         // .route_layer(from_extractor::<RequireAuth>())
         .layer(SetResponseHeaderLayer::overriding(
@@ -156,9 +157,8 @@ async fn get_today_album(
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
 
-    println!("{session:?}");
-    let a: String = session.get("username").unwrap_or_default();
-    println!("{:#?}", a);
+    let user_id: String = session.get("user_id").unwrap_or_default();
+    // println!("{:#?}", user_id);
 
     let client_id = args.client_id.to_string();
     let mut con = state.redis.get_async_connection().await.unwrap();
@@ -214,9 +214,9 @@ async fn get_album_detail(
     session: ReadableSession,
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
-    println!("{session:?}");
-    let a: String = session.get("username").unwrap_or_default();
-    println!("{:#?}", a);
+    // println!("{session:?}");
+    // let a: String = session.get("username").unwrap_or_default();
+    // println!("{:#?}", a);
 
     let sql = format!(
         r#"SELECT a.id, a.name, a.artist, a.cover, a.media_url, b.descriptors, b.released,
@@ -272,6 +272,9 @@ struct User {
     password: String,
     #[sqlx(default)]
     session_id: Option<String>,
+    #[sqlx(default)]
+    genre_data: Option<String>,
+    fresh_time: i32,
 }
 
 async fn login(
@@ -280,7 +283,7 @@ async fn login(
     Json(payload): Json<Login>,
 ) -> impl IntoResponse {
     let sql = format!(
-        r#"SELECT id, username, email, password, session_id from rym_user where
+        r#"SELECT id, username, email, password, session_id, genre_data, fresh_time from rym_user where
                       username = "{}""#,
         payload.username
     );
@@ -308,7 +311,7 @@ async fn login(
             (StatusCode::OK, Json(resp))
         }
         Err(e) => {
-            println!("no user {e:#?}");
+            println!("error {e:#?}");
             let resp = serde_json::json!({
                 "code": 400,
                 "msg": "login failed"
@@ -341,8 +344,8 @@ async fn register(
         .fetch_one(&state.db)
         .await
     {
-        Ok(exist_user) => {
-            println!("found user {exist_user:#?}");
+        Ok(_) => {
+            // println!("found user {exist_user:#?}");
             let resp = serde_json::json!({
                 "code": 400,
                 "msg": "error"
@@ -351,11 +354,11 @@ async fn register(
             return (StatusCode::BAD_REQUEST, resp)
         }
         Err(e) => {
-            println!("no user {e:#?}");
+            // println!("no user {e:#?}");
             let password = generate_password(&payload.password).await;
             let insert_sql = format!(
                 r#"INSERT INTO rym_user (username, email, password, fresh_time) VALUES ("{}",
-            "{}", "{}", "10") "#,
+            "{}", "{}", 10) "#,
                 payload.username, payload.email, password
             );
             match sqlx::query(&insert_sql).execute(&state.db).await {
@@ -369,7 +372,7 @@ async fn register(
                     return (StatusCode::OK, resp)
                 }
                 Err(e) => {
-                    println!("error {e:#?}");
+                    // println!("error {e:#?}");
                     // (StatusCode::BAD_REQUEST, Json("error"))
                     let resp = serde_json::json!({
                         "code": 400,
@@ -391,7 +394,7 @@ async fn user_info(
 
     let user_id: i32 = session.get("user_id").unwrap_or_default();
     let sql = format!(
-        r#"SELECT id, username, email, password, session_id from rym_user where
+        r#"SELECT id, username, email, password, session_id, genre_data, fresh_time from rym_user where
                       id = "{}""#,
        user_id
     );
@@ -408,7 +411,7 @@ async fn user_info(
             return (StatusCode::OK, Json(resp));
         }
         Err(e) => {
-            println!("no user {e:#?}");
+            // println!("no user {e:#?}");
             let resp = serde_json::json!({
                 "code": 400,
                 "msg": "you are not logged in"
@@ -449,7 +452,7 @@ async fn genres(
             return (StatusCode::OK, Json(resp));
         }
         Err(e) => {
-            println!("no user {e:#?}");
+            // println!("no user {e:#?}");
             let resp = serde_json::json!({
                 "code": 400,
                 "msg": "failed"
@@ -460,21 +463,29 @@ async fn genres(
 }
 
 
-async fn user_genres(
+#[derive(Deserialize)]
+struct UserConfig {
+    // genres: Vec<String>,
+    genres: String,
+    fresh_time: String,
+}
+
+
+async fn user_config(
     Extension(state): Extension<MyShared>,
     session: ReadableSession,
-    Json(payload): Json<Vec<String>>,
+    Json(payload): Json<UserConfig>,
 ) -> impl IntoResponse {
 
-    let user_id: String = session.get("user_id").unwrap_or_default();
-    let genre_str = &payload.join(",");
-
+    let user_id: i32 = session.get("user_id").unwrap_or_default();
     let sql = format!(
-        r#"update rym_user set genre_data = "{}" where id = "{}""#,
-        genre_str, user_id,
+        r#"update rym_user set genre_data = '{}', fresh_time = '{}' where id = {}"#,
+        &payload.genres, payload.fresh_time, user_id,
     );
+    // println!("{:#?}", sql);
     match sqlx::query(&sql).execute(&state.db).await {
-        Ok(_) => {
+        Ok(res) => {
+            println!("res {:#?}", res);
             let resp = serde_json::json!({
                 "code": 200,
                 "msg": "success",
@@ -488,7 +499,7 @@ async fn user_genres(
                 "code": 400,
                 "msg": "failed"
             });
-            (StatusCode::BAD_REQUEST, Json(resp))
+            return (StatusCode::BAD_REQUEST, Json(resp));
         }
     }
 }

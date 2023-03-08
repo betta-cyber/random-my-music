@@ -37,7 +37,7 @@ pub fn app() -> Html {
 
     let alert_props = AlertProps {
         message,
-        delay_ms: 50000,
+        delay_ms: 500,
     };
     html! {
         <main class="container max-w-full">
