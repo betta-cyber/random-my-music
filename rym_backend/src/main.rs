@@ -3,11 +3,13 @@ extern crate redis;
 use async_trait::async_trait;
 use axum::{
     extract::{FromRequestParts, Path, Query},
-    http::{self, header, request::Parts, StatusCode, Method},
+    http::{self, header, request::Parts, Method, StatusCode},
     // middleware::from_extractor,
     response::IntoResponse,
-    routing::{get, post, get_service},
-    Extension, Json, Router,
+    routing::{get, get_service, post},
+    Extension,
+    Json,
+    Router,
 };
 use axum_sessions::{
     async_session::MemoryStore,
@@ -21,10 +23,9 @@ use sha3::{Digest, Sha3_256};
 use sqlx::mysql::{MySql, MySqlPool, MySqlPoolOptions};
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use tower_http::cors::{CorsLayer, Any};
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::{ServeDir, ServeFile};
 use tower_http::set_header::SetResponseHeaderLayer;
-
 
 #[derive(Clone)]
 struct MyShared {
@@ -86,21 +87,21 @@ async fn main() {
     .expect("can't connect to redis");
 
     let cors = CorsLayer::new()
-                // .allow_origin("http://0.0.0.0:5001".parse::<HeaderValue>().unwrap())
-                .allow_origin(Any)
-                // .allow_origin("https://randomyourmusic.fun".parse::<HeaderValue>().unwrap())
-                .allow_methods([Method::GET, Method::POST])
-                .allow_headers([header::CONTENT_TYPE])
-                .allow_credentials(false);
+        // .allow_origin("http://0.0.0.0:5001".parse::<HeaderValue>().unwrap())
+        .allow_origin(Any)
+        // .allow_origin("https://randomyourmusic.fun".parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers([header::CONTENT_TYPE])
+        .allow_credentials(false);
 
     let store = MemoryStore::new();
     let secret = b"zgn7ryv4yuzghfzr48903m77qm4pz4xilh10toep1pgxhebkzvp2nfmodwxv7ug2";
-    let session_layer = SessionLayer::new(store, secret)
-        .with_secure(false);
+    let session_layer = SessionLayer::new(store, secret).with_secure(false);
 
     let api = Router::new()
         .route("/register", post(register))
         .route("/login", post(login))
+        .route("/logout", get(logout))
         .route("/user_config", post(user_config))
         .route("/user", get(user_info))
         .route("/today", get(get_today_album))
@@ -113,15 +114,10 @@ async fn main() {
             HeaderValue::from_static("application/json"),
         ))
         .layer(session_layer)
-        .layer(Extension(MyShared {
-            db: pool,
-            redis,
-        }));
+        .layer(Extension(MyShared { db: pool, redis }));
 
     let static_files_service = get_service(
-        ServeDir::new("../dist")
-        .fallback(ServeFile::new("../dist/index.html"))
-        // .append_index_html_on_directories(true),
+        ServeDir::new("../dist").fallback(ServeFile::new("../dist/index.html")), // .append_index_html_on_directories(true),
     )
     .handle_error(|error: std::io::Error| async move {
         (
@@ -134,7 +130,6 @@ async fn main() {
         .fallback(static_files_service)
         .nest("/api/v1", api);
 
-
     // run our app with hyper
     // `axum::Server` is a re-export of `hyper::Server`
     let addr = SocketAddr::from(([0, 0, 0, 0], 5001));
@@ -144,7 +139,6 @@ async fn main() {
         .await
         .unwrap();
 }
-
 
 #[derive(Deserialize)]
 pub struct SubjectArgs {
@@ -156,7 +150,6 @@ async fn get_today_album(
     session: ReadableSession,
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
-
     let client_id = args.client_id.to_string();
     let mut con = state.redis.get_async_connection().await.unwrap();
     let res: String = con.get(&client_id).await.unwrap_or_default();
@@ -179,22 +172,28 @@ async fn get_today_album(
             }
             let search_query = &search_query[3..];
             let search_query = format!("({})", search_query);
-            let sql = format!(r#"SELECT r1.id, name, cover FROM album AS r1 right join album_genre r2
+            let sql = format!(
+                r#"SELECT r1.id, name, cover FROM album AS r1 right join album_genre r2
             on r1.id = r2.album_id where locate("cdn", r1.cover) and {}
-            ORDER BY rand() ASC LIMIT 40"#, search_query);
+            ORDER BY rand() ASC LIMIT 40"#,
+                search_query
+            );
             sqlx::query_as::<MySql, Album>(&sql)
                 .fetch_all(&state.db)
                 .await
         };
         if let Ok(album_list) = album_list {
             let json = serde_json::to_string(&album_list).unwrap();
-            let _: () = con.set_ex(&client_id, &json, fresh_time*60).await.unwrap();
-            return json
+            let _: () = con
+                .set_ex(&client_id, &json, fresh_time * 60)
+                .await
+                .unwrap();
+            return json;
         } else {
             "error".to_string()
         }
     } else {
-        return res
+        return res;
     }
 }
 
@@ -243,9 +242,8 @@ async fn get_album_detail(
         .fetch_one(&state.db)
         .await
         .unwrap();
-    let genre_sql = format!(
-        r#"SELECT genre, genre_type from album_genre where album_id = {album_id}"#
-    );
+    let genre_sql =
+        format!(r#"SELECT genre, genre_type from album_genre where album_id = {album_id}"#);
     let genres = sqlx::query_as::<MySql, AlbumGenre>(&genre_sql)
         .fetch_all(&state.db)
         .await
@@ -313,8 +311,12 @@ async fn login(
             if password == exist_user.password {
                 // login
                 session.insert("user_id", &exist_user.id).unwrap();
-                session.insert("user_genres", &exist_user.genre_data).unwrap();
-                session.insert("fresh_time", &exist_user.fresh_time).unwrap();
+                session
+                    .insert("user_genres", &exist_user.genre_data)
+                    .unwrap();
+                session
+                    .insert("fresh_time", &exist_user.fresh_time)
+                    .unwrap();
                 let resp = serde_json::json!({
                     "code": 200,
                     "msg": "login success",
@@ -340,6 +342,16 @@ async fn login(
     }
 }
 
+async fn logout(mut session: WritableSession) -> impl IntoResponse {
+    session.destroy();
+    let resp = serde_json::json!({
+        "code": 200,
+        "msg": "logout success",
+        "data": {}
+    });
+    return (StatusCode::OK, Json(resp));
+}
+
 async fn register(
     Extension(state): Extension<MyShared>,
     Json(payload): Json<CreateUser>,
@@ -352,7 +364,7 @@ async fn register(
             "msg": "error"
         });
         let resp = serde_json::to_string(&resp).unwrap();
-        return (StatusCode::BAD_REQUEST, resp)
+        return (StatusCode::BAD_REQUEST, resp);
     }
     let sql = format!(
         r#"SELECT id, username, email, password, session_id from rym_user where
@@ -370,7 +382,7 @@ async fn register(
                 "msg": "error"
             });
             let resp = serde_json::to_string(&resp).unwrap();
-            return (StatusCode::BAD_REQUEST, resp)
+            return (StatusCode::BAD_REQUEST, resp);
         }
         Err(_) => {
             // println!("no user {e:#?}");
@@ -388,7 +400,7 @@ async fn register(
                         "data": {}
                     });
                     let resp = serde_json::to_string(&resp).unwrap();
-                    return (StatusCode::OK, resp)
+                    return (StatusCode::OK, resp);
                 }
                 Err(_) => {
                     let resp = serde_json::json!({
@@ -396,24 +408,22 @@ async fn register(
                         "msg": "error"
                     });
                     let resp = serde_json::to_string(&resp).unwrap();
-                    return (StatusCode::BAD_REQUEST, resp)
+                    return (StatusCode::BAD_REQUEST, resp);
                 }
             }
         }
     }
 }
 
-
 async fn user_info(
     Extension(state): Extension<MyShared>,
     session: ReadableSession,
 ) -> impl IntoResponse {
-
     let user_id: i32 = session.get("user_id").unwrap_or_default();
     let sql = format!(
         r#"SELECT id, username, email, password, session_id, genre_data, fresh_time from rym_user where
                       id = "{}""#,
-       user_id
+        user_id
     );
     match sqlx::query_as::<MySql, User>(&sql)
         .fetch_one(&state.db)
@@ -437,7 +447,6 @@ async fn user_info(
     }
 }
 
-
 #[derive(Debug, Clone, Deserialize, Serialize, sqlx::FromRow)]
 pub struct Genre {
     id: i32,
@@ -445,13 +454,8 @@ pub struct Genre {
     key_name: String,
 }
 
-async fn genres(
-    Extension(state): Extension<MyShared>,
-) -> impl IntoResponse {
-
-    let sql = format!(
-        r#"select id, name, key_name from genre where parents = """#
-    );
+async fn genres(Extension(state): Extension<MyShared>) -> impl IntoResponse {
+    let sql = format!(r#"select id, name, key_name from genre where parents = """#);
     match sqlx::query_as::<MySql, Genre>(&sql)
         .fetch_all(&state.db)
         .await
@@ -478,7 +482,6 @@ async fn genres(
     }
 }
 
-
 #[derive(Deserialize)]
 struct UserConfig {
     // genres: Vec<String>,
@@ -486,13 +489,11 @@ struct UserConfig {
     fresh_time: String,
 }
 
-
 async fn user_config(
     Extension(state): Extension<MyShared>,
     session: ReadableSession,
     Json(payload): Json<UserConfig>,
 ) -> impl IntoResponse {
-
     let user_id: i32 = session.get("user_id").unwrap_or_default();
     let sql = format!(
         r#"update rym_user set genre_data = '{}', fresh_time = '{}' where id = {}"#,
