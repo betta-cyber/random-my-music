@@ -9,7 +9,6 @@ static BASE_URL: &str = "/api/v1";
 // static BASE_URL: &str = "https://rymbackend-production.up.railway.app";
 
 pub async fn login_api(credentials: &str) -> Result<JsonResponse, String> {
-    console_log!("{:#?}", credentials);
     let response = match Request::post(&format!("{}/login", BASE_URL))
         .header("Content-Type", "application/json")
         .credentials(RequestCredentials::Include)
@@ -31,12 +30,40 @@ pub async fn login_api(credentials: &str) -> Result<JsonResponse, String> {
     }
 
     let res_json = response.json::<JsonResponse>().await;
-    // console_log!("{:#?}", res_json);
     match res_json {
         Ok(data) => Ok(data),
         Err(_) => Err("Failed to parse response".to_string()),
     }
 }
+
+
+pub async fn logout_api() -> Result<JsonResponse, String> {
+    let response = match Request::get(&format!("{}/logout", BASE_URL))
+        .header("Content-Type", "application/json")
+        .credentials(RequestCredentials::Include)
+        .send()
+        .await
+    {
+        Ok(res) => res,
+        Err(_) => return Err("Failed to make request".to_string()),
+    };
+
+    if response.status() != 200 {
+        let error_response = response.json::<ErrorResponse>().await;
+        if let Ok(error_response) = error_response {
+            return Err(error_response.msg);
+        } else {
+            return Err(format!("API error: {}", response.status()));
+        }
+    }
+
+    let res_json = response.json::<JsonResponse>().await;
+    match res_json {
+        Ok(data) => Ok(data),
+        Err(_) => Err("Failed to parse response".to_string()),
+    }
+}
+
 
 pub async fn register_api(credentials: &str) -> Result<JsonResponse, String> {
     let response = match Request::post(&format!("{}/register", BASE_URL))

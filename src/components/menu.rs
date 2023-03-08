@@ -1,13 +1,20 @@
 use web_sys::HtmlElement;
 use yew::prelude::*;
 use yewdux::prelude::*;
-use crate::store::Store;
+use yew_router::prelude::*;
+use wasm_bindgen_futures::spawn_local;
+use crate::api::user_api::logout_api;
+use crate::router::Route;
+use crate::store::{Store, set_show_alert, set_page_loading, set_auth_user};
+use crate::{app::log, console_log};
+
 
 
 #[function_component]
 pub fn Menu() -> Html {
-    let (store, _) = use_store::<Store>();
+    let (store, dispatch) = use_store::<Store>();
     let user = store.auth_user.clone();
+    // let navigator = use_navigator().unwrap();
 
     let onclick = Callback::from(|e: MouseEvent| {
         if let Some(_) = e.target_dyn_into::<HtmlElement>() {
@@ -29,20 +36,45 @@ pub fn Menu() -> Html {
         }
     });
 
+
+    // let navigator = use_navigator();
+    // console_log!("{:#?}", navigator);
+
+    let logout = Callback::from( move |_: MouseEvent| {
+        // let navigator = navigator.clone();
+        let dispatch = dispatch.clone();
+        spawn_local(async move {
+            // let navigator = navigator.clone();
+            set_page_loading(true, dispatch.clone());
+            let res = logout_api().await;
+            match res {
+                Ok(data) => {
+                    set_auth_user(None, dispatch.clone());
+                    set_page_loading(false, dispatch.clone());
+                    set_show_alert(data.msg.to_string(), dispatch);
+                    // navigator.push(&Route::Home);
+                }
+                Err(e) => {
+                    set_page_loading(false, dispatch.clone());
+                    set_show_alert(e.to_string(), dispatch);
+                }
+            };
+        });
+    });
+
     html! {
         <>
         <div class="menu" onclick={onclick.clone()}>
             <div class="bar1"></div>
             <div class="bar2"></div>
             <div class="bar3"></div>
-        </div>
-        <div class="menu-item">
+        </div> <div class="menu-item">
             <div class="">
                 <ul>
                     <li><a href="/" >{"Home"}</a></li>
                     if let Some(user) = user {
                         <li><a href="/profile" onclick={onclick.clone()}>{ user.username }</a></li>
-                        <li><a href="/logout" onclick={onclick.clone()}>{"Sign out"}</a></li>
+                        <li><a onclick={logout}>{"Sign out"}</a></li>
                     } else {
                         <li><a href="/sign_in" onclick={onclick.clone()}>{"Sign in"}</a></li>
                         <li><a href="/register" onclick={onclick.clone()}>{"Sign up"}</a></li>
