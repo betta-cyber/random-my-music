@@ -186,12 +186,12 @@ pub fn profile_page() -> Html {
                     html! {
                         <div class="float-left m-2">
                             <input class="genre" type="checkbox" checked={
-                                if user.genre_data.contains(&g.key_name) {
+                                if user.genre_data.contains(&g.name) {
                                     true
                                 } else {
                                     false
                                 }
-                            } value={g.key_name.clone()}/>
+                            } value={g.name.clone()}/>
                             <label for={g.key_name.clone()} >{ &g.name }</label>
                         </div>
                     }

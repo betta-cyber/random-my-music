@@ -40,9 +40,7 @@ pub struct ErrorResponse {
 pub struct Album {
     pub id: i32,
     pub name: String,
-    pub artist: String,
     pub cover: String,
-    pub media_url: HashMap<String, serde_json::Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]

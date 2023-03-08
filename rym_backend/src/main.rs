@@ -157,27 +157,44 @@ async fn get_today_album(
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
 
-    let user_id: String = session.get("user_id").unwrap_or_default();
-    // println!("{:#?}", user_id);
-
     let client_id = args.client_id.to_string();
     let mut con = state.redis.get_async_connection().await.unwrap();
     let res: String = con.get(&client_id).await.unwrap_or_default();
     if res.is_empty() {
-        let album_list = sqlx::query_as::<MySql, Album>(
-            r#"SELECT r1.id, name, artist, cover, media_url
-        FROM album AS r1 where locate("cdn", r1.cover) ORDER BY rand() ASC LIMIT 40"#,
-        )
-        .fetch_all(&state.db)
-        .await
-        .unwrap();
-
-        // save to redis
-        let j = serde_json::to_string(&album_list).unwrap();
-        let _: () = con.set_ex(&client_id, &j, 600).await.unwrap();
-        j
+        let fresh_time: usize = session.get("fresh_time").unwrap_or_default();
+        let user_genres: String = session.get("user_genres").unwrap_or_default();
+        let album_list = if user_genres.is_empty() {
+            sqlx::query_as::<MySql, Album>(
+                r#"SELECT r1.id, name, cover
+                FROM album AS r1 where locate("cdn", r1.cover) ORDER BY rand() ASC LIMIT 40"#,
+            )
+            .fetch_all(&state.db)
+            .await
+        } else {
+            let genre_list = user_genres.split(",");
+            let mut search_query = String::new();
+            for genre in genre_list {
+                let g = format!(" or r2.genre like '%{}%'", genre);
+                search_query.push_str(&g);
+            }
+            let search_query = &search_query[3..];
+            let search_query = format!("({})", search_query);
+            let sql = format!(r#"SELECT r1.id, name, cover FROM album AS r1 right join album_genre r2
+            on r1.id = r2.album_id where locate("cdn", r1.cover) and {}
+            ORDER BY rand() ASC LIMIT 40"#, search_query);
+            sqlx::query_as::<MySql, Album>(&sql)
+                .fetch_all(&state.db)
+                .await
+        };
+        if let Ok(album_list) = album_list {
+            let json = serde_json::to_string(&album_list).unwrap();
+            let _: () = con.set_ex(&client_id, &json, fresh_time*60).await.unwrap();
+            return json
+        } else {
+            "error".to_string()
+        }
     } else {
-        res
+        return res
     }
 }
 
@@ -185,9 +202,9 @@ async fn get_today_album(
 pub struct Album {
     id: i32,
     name: String,
-    artist: String,
+    // artist: String,
     cover: String,
-    media_url: sqlx::types::Json<HashMap<String, serde_json::Value>>,
+    // media_url: sqlx::types::Json<HashMap<String, serde_json::Value>>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, sqlx::FromRow)]
@@ -211,7 +228,7 @@ pub struct AlbumGenre {
 
 async fn get_album_detail(
     Path(album_id): Path<u64>,
-    session: ReadableSession,
+    // session: ReadableSession,
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
     // println!("{session:?}");
@@ -296,6 +313,8 @@ async fn login(
             if password == exist_user.password {
                 // login
                 session.insert("user_id", &exist_user.id).unwrap();
+                session.insert("user_genres", &exist_user.genre_data).unwrap();
+                session.insert("fresh_time", &exist_user.fresh_time).unwrap();
                 let resp = serde_json::json!({
                     "code": 200,
                     "msg": "login success",
@@ -353,7 +372,7 @@ async fn register(
             let resp = serde_json::to_string(&resp).unwrap();
             return (StatusCode::BAD_REQUEST, resp)
         }
-        Err(e) => {
+        Err(_) => {
             // println!("no user {e:#?}");
             let password = generate_password(&payload.password).await;
             let insert_sql = format!(
@@ -371,9 +390,7 @@ async fn register(
                     let resp = serde_json::to_string(&resp).unwrap();
                     return (StatusCode::OK, resp)
                 }
-                Err(e) => {
-                    // println!("error {e:#?}");
-                    // (StatusCode::BAD_REQUEST, Json("error"))
+                Err(_) => {
                     let resp = serde_json::json!({
                         "code": 400,
                         "msg": "error"
@@ -410,8 +427,7 @@ async fn user_info(
             });
             return (StatusCode::OK, Json(resp));
         }
-        Err(e) => {
-            // println!("no user {e:#?}");
+        Err(_) => {
             let resp = serde_json::json!({
                 "code": 400,
                 "msg": "you are not logged in"
@@ -451,7 +467,7 @@ async fn genres(
             });
             return (StatusCode::OK, Json(resp));
         }
-        Err(e) => {
+        Err(_e) => {
             // println!("no user {e:#?}");
             let resp = serde_json::json!({
                 "code": 400,
