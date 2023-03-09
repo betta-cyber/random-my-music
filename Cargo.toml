@@ -26,15 +26,15 @@ validator = { version = "0.16.0", features = ["derive"] }
 yewdux = "0.9.2"
 
 [[bin]]
-name = "rym_backend"
-path = "rym_backend/src/main.rs"
+name = "backend"
+path = "backend/src/main.rs"
 
 [[bin]]
-name = "rym_frontend"
-path = "rym_frontend/src/main.rs"
+name = "frontend"
+path = "frontend/src/main.rs"
 
 [workspace]
-members = ["src-tauri", "rym_backend", "rym_frontend"]
+members = ["src-tauri", "backend", "frontend"]
 
 [profile.release]
 opt-level = 'z'

@@ -1,5 +1,5 @@
 [package]
-name = "rym_backend"
+name = "backend"
 version = "0.1.0"
 edition = "2021"
 
