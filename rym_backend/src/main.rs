@@ -154,7 +154,7 @@ async fn get_today_album(
     let mut con = state.redis.get_async_connection().await.unwrap();
     let res: String = con.get(&client_id).await.unwrap_or_default();
     if res.is_empty() {
-        let fresh_time: usize = session.get("fresh_time").unwrap_or_default();
+        let fresh_time: usize = session.get("fresh_time").unwrap_or(10);
         let user_genres: String = session.get("user_genres").unwrap_or_default();
         let album_list = if user_genres.is_empty() {
             sqlx::query_as::<MySql, Album>(
