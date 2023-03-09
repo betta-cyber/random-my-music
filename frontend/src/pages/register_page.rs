@@ -185,7 +185,7 @@ pub fn register_page() -> Html {
         </h2>
           <form
             onsubmit={on_submit}
-            class="max-w-md w-full mx-auto overflow-hidden shadow-2xl bg-gray-700 bg-opacity-50 rounded-2xl p-8 space-y-5"
+            class="max-w-md w-10/12 mx-auto overflow-hidden shadow-2xl bg-gray-700 bg-opacity-50 rounded-2xl p-8 space-y-5"
           >
             <FormInput label="Userame" name="name" input_ref={username_input_ref} handle_onchange={handle_username_input}  errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
             <FormInput label="Email" name="email" input_type="email" input_ref={email_input_ref} handle_onchange={handle_email_input}  errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />

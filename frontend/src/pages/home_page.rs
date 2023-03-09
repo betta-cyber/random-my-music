@@ -1,11 +1,13 @@
 use yew::prelude::*;
 use yewdux::prelude::*;
+use web_sys::HtmlElement;
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
 use uuid::Uuid;
 use crate::api::user_api::today_album_api;
 use crate::api::types::Album;
 use crate::store::{Store, set_page_loading};
+use crate::{app::log, console_log};
 
 
 #[derive(Properties, PartialEq)]
@@ -28,15 +30,25 @@ fn AlbumCover(props: &Props) -> Html {
 
     let detail_url = format!("/album/{}", album.id);
 
-    let on_error = Callback::from(move | _e: Event | {
+    let onerror = Callback::from(move | _e: Event | {
         // console_log!("{:#?}", e);
         // img_src = "https://randomyourmusic.fun/static/default.png".to_string();
+    });
+
+    let onload = Callback::from(move |e: Event| {
+        if let Some(img) = e.target_dyn_into::<HtmlElement>() {
+            img.toggle_attribute("hidden").unwrap();
+        }
+
     });
 
     html! {
         <div class="album">
             <a href={detail_url} target="_blank">
-                <img loading="lazy" src={img_src} onerror={on_error} />
+                <i class="lazyload-img">
+                    <img src={img_src} onerror={onerror} onload={onload} hidden=true />
+                    // <img loading="lazy" src={img_src} onerror={onerror} onload={onload} hidden=true />
+                </i>
             </a>
         </div>
     }
