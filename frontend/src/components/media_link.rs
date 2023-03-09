@@ -3,8 +3,8 @@ use yew::prelude::*;
 use std::collections::HashMap;
 // use yew_router::prelude::Link;
 // use crate::router::Route;
-use crate::console_log;
-use crate::app::log;
+// use crate::console_log;
+// use crate::app::log;
 
 
 #[derive(Debug, PartialEq)]
@@ -122,7 +122,7 @@ pub fn MediaLink(props: &Props) -> Html {
             // https://www.youtube.com/watch?v=-Kqf6vtQmPQ
             &_ => { None }
         };
-        console_log!("{:#?}", a);
+        // console_log!("{:#?}", a);
         if a != None {
             data.push(a.unwrap());
         }

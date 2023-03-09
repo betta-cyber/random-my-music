@@ -198,9 +198,9 @@ pub fn profile_page() -> Html {
                     }).collect::<Html>()
                 }
                 <div class="float-left w-full">
-                    <FormInput label="Fresh Time: [3-3600] mins" name="fresh_time" input_type="" input_ref={fresh_time_input_ref} handle_onchange={handle_fresh_time_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
+                    <FormInput label="Fresh Time: [1-3600] min" name="fresh_time" input_type="" input_ref={fresh_time_input_ref} handle_onchange={handle_fresh_time_input} errors={&*validation_errors} handle_on_input_blur={validate_input_on_blur.clone()} />
                 </div>
-                <button onclick={on_submit}>{"Update"}</button>
+                <button class="mt-4" onclick={on_submit}>{"Update"}</button>
                 // <LoadingButton
                     // loading={store.page_loading}
                     // text_color={Some("text-gray-800".to_string())}

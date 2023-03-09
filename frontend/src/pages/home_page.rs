@@ -7,6 +7,7 @@ use uuid::Uuid;
 use crate::api::user_api::today_album_api;
 use crate::api::types::Album;
 use crate::store::{Store, set_page_loading};
+#[allow(unused_imports)]
 use crate::{app::log, console_log};
 
 
