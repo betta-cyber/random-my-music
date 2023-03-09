@@ -101,20 +101,20 @@ pub fn profile_page() -> Html {
                 let response = user_info_api().await;
                 match response {
                     Ok(user) => {
-                        set_page_loading(false, dispatch.clone());
-                        set_auth_user(Some(user), dispatch);
+                        set_auth_user(Some(user), dispatch.clone());
                     }
                     Err(e) => {
                         set_page_loading(false, dispatch.clone());
                         if e.contains("not logged") {
                             navigator.push(&Route::SignIn);
                         }
-                        set_show_alert(e.to_string(), dispatch);
+                        set_show_alert(e.to_string(), dispatch.clone());
                     }
                 }
                 if let Ok(data) = genres_api().await {
                     genres.set(data);
                 }
+                set_page_loading(false, dispatch);
             });
         },
         ());
