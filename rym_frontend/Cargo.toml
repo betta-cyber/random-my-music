@@ -1,6 +1,6 @@
 [package]
-name = "random-my-music-ui"
-version = "0.0.0"
+name = "rym-frontend"
+version = "0.0.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -25,17 +25,6 @@ uuid = { version="1.3.0", features = ["v4", "js"] }
 validator = { version = "0.16.0", features = ["derive"] }
 yewdux = "0.9.2"
 
-[[bin]]
-name = "rym_backend"
-path = "rym_backend/src/main.rs"
-
-[[bin]]
-name = "rym_frontend"
-path = "rym_frontend/src/main.rs"
-
-[workspace]
-members = ["src-tauri", "rym_backend", "rym_frontend"]
-
-[profile.release]
-opt-level = 'z'
-lto = true
+# [profile.release]
+# opt-level = 'z'
+# lto = true
