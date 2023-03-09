@@ -8,7 +8,7 @@ pub struct User {
     pub id: i32,
     pub email: String,
     pub username: String,
-    pub genre_data: String,
+    pub genre_data: Option<String>,
     pub fresh_time: i32,
 }
 

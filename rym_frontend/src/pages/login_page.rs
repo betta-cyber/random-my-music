@@ -14,7 +14,7 @@ use crate::api::{user_api::login_api};
 use crate::store::{Store, set_show_alert, set_page_loading, set_auth_user};
 use crate::router::Route;
 use crate::api::types::User;
-// use crate::{app::log, console_log};
+use crate::{app::log, console_log};
 
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Validate)]
@@ -128,7 +128,9 @@ pub fn sign_in() -> Html {
                             Ok(user) => {
                                 set_auth_user(Some(user), dispatch.clone());
                             }
-                            Err(_) => {}
+                            Err(e) => {
+                                console_log!("{:#?}", e);
+                            }
                         };
                         set_page_loading(false, dispatch);
                         navigator.push(&Route::Home);

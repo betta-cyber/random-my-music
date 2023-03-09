@@ -2,12 +2,12 @@ use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 
+#[allow(unused_imports)]
 use crate::{
     api::user_api::{user_info_api, genres_api, user_config_api},
     router::Route,
     store::{set_auth_user, set_page_loading, set_show_alert, Store},
-    app::log,
-    console_log,
+    app::log, console_log,
     components::form_input::FormInput,
 };
 use serde::{Deserialize, Serialize};
@@ -151,7 +151,7 @@ pub fn profile_page() -> Html {
                 match res {
                     Ok(data) => {
                         // update user store
-                        user.as_mut().unwrap().genre_data = genre_str;
+                        user.as_mut().unwrap().genre_data = Some(genre_str);
                         user.as_mut().unwrap().fresh_time = fresh_time_input;
                         set_auth_user(user, dispatch.clone());
                         set_page_loading(false, dispatch.clone());
@@ -186,7 +186,7 @@ pub fn profile_page() -> Html {
                     html! {
                         <div class="float-left m-2">
                             <input class="genre" type="checkbox" checked={
-                                if user.genre_data.contains(&g.name) {
+                                if user.genre_data.clone().unwrap_or("".to_string()).contains(&g.name) {
                                     true
                                 } else {
                                     false

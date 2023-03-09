@@ -1,13 +1,11 @@
 use web_sys::HtmlElement;
 use yew::prelude::*;
 use yewdux::prelude::*;
-use yew_router::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use crate::api::user_api::logout_api;
-use crate::router::Route;
 use crate::store::{Store, set_show_alert, set_page_loading, set_auth_user};
+#[allow(unused_imports)]
 use crate::{app::log, console_log};
-
 
 
 #[function_component]
