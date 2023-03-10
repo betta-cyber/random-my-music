@@ -7,13 +7,7 @@
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
-
   color: #0f0f0f;
-  /* background-color: #f6f6f6; */
-  /* background-color: aliceblue; */
-  --tw-bg-opacity: 1;
-  background-color: rgb(30 64 175 / var(--tw-bg-opacity));
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -29,18 +23,7 @@ body {
 
 .container {
   margin: 0;
-  /* height: auto; */
-  /* padding-top: 10vh; */
-  /* display: flex; */
   text-align: center;
-  /* display: flex; */
-  /* flex-direction: row; */
-  /* justify-content: center; */
-  /* overflow: hidden; */
-  /* flex-wrap: nowrap; */
-  /* column-count: 8; */
-  /* column-gap: .5vw; */
-  /* padding-top: .5vw; */
 }
 
 .logo {
@@ -141,10 +124,8 @@ button {
 
 img {
   pointer-events: None !important;
-  /* float: left; */
   overflow: hidden;
   width: 100%;
-  /* height: 100%; */
 }
 
 @media screen and (min-width: 960px) {
@@ -177,7 +158,7 @@ img {
 
 .menu {
   position: fixed;
-  top: 5px;
+  bottom: 5px;
   right: 5px;
   color: #000;
   display: inline-block;

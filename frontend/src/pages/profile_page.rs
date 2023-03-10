@@ -169,10 +169,10 @@ pub fn profile_page() -> Html {
 
     html! {
     <>
-      <section class="bg-ct-blue-600 min-h-screen pt-20">
+      <section class="bg-blue-800 min-h-screen py-20">
         <div class="max-w-4xl mx-auto rounded-md">
-          <div class="max-w-md w-full mx-auto overflow-hidden shadow-2xl bg-gray-700 bg-opacity-50 rounded-2xl p-8 space-y-5">
-            <p class="text-5xl font-semibold">{"Profile Page"}</p>
+          <div class="max-w-md w-10/12 mx-auto overflow-hidden shadow-2xl bg-gray-700 bg-opacity-50 rounded-2xl p-8 space-y-5 text-left">
+            <p class="text-4xl font-semibold">{"Profile Page"}</p>
             if let Some(user) = user {
                 <div class="mt-8">
                     <p class="mb-4">{format!("Name: {}", user.username)}</p>
@@ -184,7 +184,7 @@ pub fn profile_page() -> Html {
                 {
                     genres.iter().map(|g| {
                     html! {
-                        <div class="float-left m-2">
+                        <div class="float-left m-1 break-all w-full">
                             <input class="genre" type="checkbox" checked={
                                 if user.genre_data.clone().unwrap_or("".to_string()).contains(&g.name) {
                                     true
