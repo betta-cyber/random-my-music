@@ -266,6 +266,14 @@ img {
     background-size: 100% 100%;
 }
 
+.ui_media_link_btn_netease {
+    background-image: url(/public/media_link/netease32x32.jpg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: none;
+    background-size: 100% 100%;
+}
+
 .ui_media_link_btn_bandcamp {
     background-image: url(/public/media_link/bandcamp32x32.svg);
     background-position: center center;

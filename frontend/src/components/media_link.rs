@@ -47,6 +47,26 @@ pub fn MediaLink(props: &Props) -> Html {
                     media_class: "ui_media_link_btn ui_media_link_btn_spotify".to_string()
                 })
             },
+            "netease" => {
+                let mut netease = "";
+                for (kk, vv) in v.as_object().unwrap() {
+                    match vv.get("default") {
+                        Some(default) => {
+                            if default.as_bool().unwrap() {
+                                netease = kk;
+                                break
+                            }
+                        }
+                        None => {}
+                    }
+                }
+                let link = format!("https://music.163.com/#/album?id={}", netease);
+                Some(Link {
+                    media_link: link,
+                    title: "Netease".to_string(),
+                    media_class: "ui_media_link_btn ui_media_link_btn_netease".to_string()
+                })
+            },
             "applemusic" => {
                 let mut applemusic = "";
                 let mut album = None;
