@@ -230,27 +230,34 @@ async fn get_album_detail(
     // session: ReadableSession,
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
-    // println!("{session:?}");
-    // let a: String = session.get("username").unwrap_or_default();
-    // println!("{:#?}", a);
-
     let sql = format!(
         r#"SELECT a.id, a.name, a.artist, a.cover, a.media_url, b.descriptors, b.released,
     b.language, b.rate from album a left join album_detail b on a.id = b.album_id where a.id = {album_id}"#
     );
     let album_detail = sqlx::query_as::<MySql, AlbumDetail>(&sql)
         .fetch_one(&state.db)
-        .await
-        .unwrap();
-    let genre_sql =
-        format!(r#"SELECT genre, genre_type from album_genre where album_id = {album_id}"#);
-    let genres = sqlx::query_as::<MySql, AlbumGenre>(&genre_sql)
-        .fetch_all(&state.db)
-        .await
-        .unwrap();
-    let mut j = serde_json::to_value(&album_detail).unwrap();
-    j["genres"] = serde_json::to_value(genres).unwrap();
-    Json(j)
+        .await;
+
+    match album_detail {
+        Ok(detail) => {
+            let genre_sql =
+                format!(r#"SELECT genre, genre_type from album_genre where album_id = {album_id}"#);
+            let genres = sqlx::query_as::<MySql, AlbumGenre>(&genre_sql)
+                .fetch_all(&state.db)
+                .await
+                .unwrap();
+            let mut j = serde_json::to_value(&detail).unwrap();
+            j["genres"] = serde_json::to_value(genres).unwrap();
+            (StatusCode::OK, Json(j))
+        }
+        Err(_) => {
+            let resp = serde_json::json!({
+                "code": 400,
+                "msg": "api error"
+            });
+            (StatusCode::BAD_REQUEST, Json(resp))
+        }
+    }
 }
 
 async fn generate_password(password: &str) -> String {

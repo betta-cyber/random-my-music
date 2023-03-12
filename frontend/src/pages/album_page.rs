@@ -35,7 +35,9 @@ pub fn album(props: &DetailProps) -> Html {
                         detail.set(data);
                         set_page_loading(false, dispatch);
                     }
-                    Err(_) => {}
+                    Err(_) => {
+                        set_page_loading(false, dispatch);
+                    }
                 }
             });
             || ()
