@@ -67,6 +67,26 @@ pub fn MediaLink(props: &Props) -> Html {
                     media_class: "ui_media_link_btn ui_media_link_btn_netease".to_string()
                 })
             },
+            "qqmusic" => {
+                let mut qqmusic = "";
+                for (kk, vv) in v.as_object().unwrap() {
+                    match vv.get("default") {
+                        Some(default) => {
+                            if default.as_bool().unwrap() {
+                                qqmusic = kk;
+                                break
+                            }
+                        }
+                        None => {}
+                    }
+                }
+                let link = format!("https://y.qq.com/n/ryqq/albumDetail/{}", qqmusic);
+                Some(Link {
+                    media_link: link,
+                    title: "QQMusic".to_string(),
+                    media_class: "ui_media_link_btn ui_media_link_btn_qqmusic".to_string()
+                })
+            }
             "applemusic" => {
                 let mut applemusic = "";
                 let mut album = None;

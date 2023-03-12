@@ -274,6 +274,14 @@ img {
     background-size: 100% 100%;
 }
 
+.ui_media_link_btn_qqmusic {
+    background-image: url(/public/media_link/qqmusic32x32.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: none;
+    background-size: 100% 100%;
+}
+
 .ui_media_link_btn_bandcamp {
     background-image: url(/public/media_link/bandcamp32x32.svg);
     background-position: center center;
