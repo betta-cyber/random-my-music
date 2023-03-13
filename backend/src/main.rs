@@ -154,8 +154,34 @@ async fn get_today_album(
     let mut con = state.redis.get_async_connection().await.unwrap();
     let res: String = con.get(&client_id).await.unwrap_or_default();
     if res.is_empty() {
-        let fresh_time: usize = session.get("fresh_time").unwrap_or(10);
-        let user_genres: String = session.get("user_genres").unwrap_or_default();
+
+        let (fresh_time, user_genres) = match session.get::<usize>("fresh_time") {
+            Some(fresh_time) => {
+                let user_genres: String = session.get("user_genres").unwrap_or_default();
+                (fresh_time, user_genres)
+            }
+            None => {
+                let sql = format!(
+                    r#"SELECT id, username, email, password, session_id, genre_data, fresh_time from rym_user where
+                                  session_id like "%{}%""#,
+                    client_id
+                );
+                match sqlx::query_as::<MySql, User>(&sql)
+                    .fetch_one(&state.db)
+                    .await
+                {
+                    Ok(user) =>  {
+                        let fresh_time: usize = user.fresh_time as usize;
+                        let user_genres: String = user.genre_data.unwrap_or_default();
+                        (fresh_time, user_genres)
+                    }
+                    Err(_) => {
+                        (10, String::new())
+                    }
+                }
+            }
+        };
+        println!("{:#?}, {:#?}", fresh_time, user_genres);
         let album_list = if user_genres.is_empty() {
             sqlx::query_as::<MySql, Album>(
                 r#"SELECT r1.id, name, cover
@@ -284,6 +310,7 @@ struct CreateUser {
 struct Login {
     username: String,
     password: String,
+    client_id: String,
 }
 
 #[derive(Serialize, Debug, sqlx::FromRow)]
@@ -325,6 +352,23 @@ async fn login(
                 session
                     .insert("fresh_time", &exist_user.fresh_time)
                     .unwrap();
+
+                // update client session id
+                let session_id = match &exist_user.session_id {
+                    Some(session_id) => {
+                        if session_id.contains(&payload.client_id) {
+                            session_id.to_string()
+                        } else {
+                            format!("{},{}", session_id, payload.client_id)
+                        }
+                    }
+                    None => {
+                        payload.client_id
+                    }
+                };
+                let update_sql = format!(r#"update rym_user set session_id = "{}" where id = {}"#, session_id, &exist_user.id);
+                sqlx::query(&update_sql).execute(&state.db).await.unwrap();
+
                 let resp = serde_json::json!({
                     "code": 200,
                     "msg": "login success",

@@ -9,6 +9,8 @@ use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::*;
+use gloo::storage::LocalStorage;
+use gloo_storage::Storage;
 use crate::components::{form_input::FormInput, loading_button::LoadingButton};
 use crate::api::{user_api::login_api};
 use crate::store::{Store, set_show_alert, set_page_loading, set_auth_user};
@@ -28,6 +30,7 @@ struct LoginSchema {
         length(min = 6, message = "Password must be at least 6 characters")
     )]
     password: String,
+    client_id: Option<String>
 }
 
 
@@ -59,6 +62,7 @@ pub fn sign_in() -> Html {
 
     let handle_username_input = get_input_callback("username", form.clone());
     let handle_password_input = get_input_callback("password", form.clone());
+
 
     let validate_input_on_blur = {
         let cloned_form = form.clone();
@@ -117,9 +121,15 @@ pub fn sign_in() -> Html {
                 let form_data = form.clone();
                 let username_input = username_input_ref.cast::<HtmlInputElement>().unwrap();
                 let password_input = password_input_ref.cast::<HtmlInputElement>().unwrap();
-                set_page_loading(true, dispatch.clone());
+                let client_id: Option<String> = match LocalStorage::get("client_id") {
+                    Ok(client_id) => {Some(client_id)},
+                    Err(_) => {None}
+                };
+                let mut data = form_data.deref().clone();
+                data.client_id = client_id;
 
-                let form_json = serde_json::to_string(&*form_data).unwrap();
+                set_page_loading(true, dispatch.clone());
+                let form_json = serde_json::to_string(&data).unwrap();
                 let res = login_api(&form_json).await;
                 match res {
                     Ok(data) => {
@@ -128,9 +138,7 @@ pub fn sign_in() -> Html {
                             Ok(user) => {
                                 set_auth_user(Some(user), dispatch.clone());
                             }
-                            Err(e) => {
-                                console_log!("{:#?}", e);
-                            }
+                            Err(_) => {}
                         };
                         set_page_loading(false, dispatch);
                         navigator.push(&Route::Home);
