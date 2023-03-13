@@ -231,8 +231,9 @@ async fn get_album_detail(
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
     let sql = format!(
-        r#"SELECT a.id, a.name, a.artist, a.cover, a.media_url, b.descriptors, b.released,
-    b.language, b.rate from album a left join album_detail b on a.id = b.album_id where a.id = {album_id}"#
+        r#"SELECT a.id, a.name, a.artist, a.cover, a.media_url, IFNULL(b.descriptors, '') as descriptors,
+        IFNULL(b.released, '') as released, IFNULL(b.language, '') as language, IFNULL(b.rate, '') as rate
+        from album a left join album_detail b on a.id = b.album_id where a.id = {album_id}"#
     );
     let album_detail = sqlx::query_as::<MySql, AlbumDetail>(&sql)
         .fetch_one(&state.db)
