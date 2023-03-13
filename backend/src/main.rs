@@ -107,6 +107,7 @@ async fn main() {
         .route("/today", get(get_today_album))
         .route("/album/:album_id", get(get_album_detail))
         .route("/genres", get(genres))
+        // .route("/user_album_log", post(add_user_album_log))
         .layer(cors)
         // .route_layer(from_extractor::<RequireAuth>())
         .layer(SetResponseHeaderLayer::overriding(
@@ -181,7 +182,7 @@ async fn get_today_album(
                 }
             }
         };
-        println!("{:#?}, {:#?}", fresh_time, user_genres);
+        // println!("{:#?}, {:#?}", fresh_time, user_genres);
         let album_list = if user_genres.is_empty() {
             sqlx::query_as::<MySql, Album>(
                 r#"SELECT r1.id, name, cover
@@ -227,9 +228,7 @@ async fn get_today_album(
 pub struct Album {
     id: i32,
     name: String,
-    // artist: String,
     cover: String,
-    // media_url: sqlx::types::Json<HashMap<String, serde_json::Value>>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, sqlx::FromRow)]
@@ -253,7 +252,7 @@ pub struct AlbumGenre {
 
 async fn get_album_detail(
     Path(album_id): Path<u64>,
-    // session: ReadableSession,
+    session: ReadableSession,
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
     let sql = format!(
@@ -274,7 +273,30 @@ async fn get_album_detail(
                 .await
                 .unwrap();
             let mut j = serde_json::to_value(&detail).unwrap();
-            j["genres"] = serde_json::to_value(genres).unwrap();
+            j["genres"] = serde_json::to_value(genres.clone()).unwrap();
+
+            // insert album log
+            let user_id: i32 = session.get("user_id").unwrap_or_default();
+            if user_id != 0 {
+                let album_genre: String = genres.iter().map(|g| {&*g.genre}).collect::<Vec<&str>>().join("|");
+                let sql = format!(
+                    r#"select id, album_id, album_genre, click_count, listen_count from user_album_log where user_id = '{}' and album_id = '{}'"#,
+                    user_id, detail.id,
+                );
+                match sqlx::query_as::<MySql, UserAlbumLog>(&sql).fetch_one(&state.db).await {
+                    Ok(res) => {
+                        let update_sql = format!(r#"UPDATE user_album_log set click_count = {}, listen_count
+                            = {} WHERE id = {}"#, res.click_count+1, res.listen_count+1, res.id);
+                        sqlx::query(&update_sql).execute(&state.db).await.unwrap();
+                    }
+                    Err(e) => {
+                        println!("{:#?}", e);
+                        let insert_sql = format!(r#"INSERT INTO user_album_log (user_id, album_id, album_genre, click_count,
+                            listen_count) VALUES ("{}", "{}", "{}", 1, 1) "#, user_id, detail.id, album_genre);
+                        sqlx::query(&insert_sql).execute(&state.db).await.unwrap();
+                    }
+                }
+            }
             (StatusCode::OK, Json(j))
         }
         Err(_) => {
@@ -536,7 +558,6 @@ async fn genres(Extension(state): Extension<MyShared>) -> impl IntoResponse {
 
 #[derive(Deserialize)]
 struct UserConfig {
-    // genres: Vec<String>,
     genres: String,
     fresh_time: String,
 }
@@ -572,3 +593,47 @@ async fn user_config(
         }
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, sqlx::FromRow)]
+pub struct UserAlbumLog {
+    id: i32,
+    album_id: String,
+    album_genre: String,
+    click_count: i32,
+    listen_count: i32,
+}
+
+// async fn get_user_album_log(
+    // Extension(state): Extension<MyShared>,
+    // session: ReadableSession,
+// ) -> impl IntoResponse {
+    // let user_id: i32 = session.get("user_id").unwrap_or_default();
+
+    // let sql = format!(
+        // r#"select id from user_album_log where user_id = '{}', album_id = '{}'"#,
+        // user_id, payload.album_id,
+    // );
+    // match sqlx::query_as::<MySql, UserAlbumLog>(&sql).fetch_one(&state.db).await {
+        // Ok(res) => {
+            // let update_sql = format!(r#"UPDATE user_album_log set click_count = {}, listen_count
+                // = {} FROM WHERE id = {})"#, res.click_count+1, res.listen_count+1, res.id);
+            // sqlx::query(&update_sql).execute(&state.db).await.unwrap();
+            // let resp = serde_json::json!({
+                // "code": 200,
+                // "msg": "success",
+                // "data": {}
+            // });
+            // return (StatusCode::OK, Json(resp));
+        // }
+        // Err(_) => {
+            // let insert_sql = format!(r#"INSERT INTO user_album_log (user_id, album_id, album_genre, click_count,
+                // listen_count) VALUES ("{}", "{}", "{}", 1, 1) "#, user_id, &payload.album_id, &payload.album_genre);
+            // sqlx::query(&insert_sql).execute(&state.db).await.unwrap();
+            // let resp = serde_json::json!({
+                // "code": 400,
+                // "msg": "success"
+            // });
+            // return (StatusCode::BAD_REQUEST, Json(resp));
+        // }
+    // }
+// }

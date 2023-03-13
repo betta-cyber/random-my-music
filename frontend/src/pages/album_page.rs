@@ -46,11 +46,14 @@ pub fn album(props: &DetailProps) -> Html {
 
     let mut genre_pri_text = "".to_string();
     let mut genre_sec_text = "".to_string();
+    let mut genres: Vec<String> = vec![];
     for g in &detail.genres {
         if g.genre_type == "pri" {
-            genre_pri_text += &g.genre
+            genre_pri_text += &g.genre;
+            genres.push(g.genre.clone());
         } else {
-            genre_sec_text += &g.genre
+            genre_sec_text += &g.genre;
+            genres.push(g.genre.clone());
         }
     }
 
@@ -58,7 +61,6 @@ pub fn album(props: &DetailProps) -> Html {
         if let Some(img) = e.target_dyn_into::<HtmlElement>() {
             img.toggle_attribute("hidden").unwrap();
         }
-
     });
 
     html! {
