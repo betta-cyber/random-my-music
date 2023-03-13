@@ -74,7 +74,7 @@ pub fn album(props: &DetailProps) -> Html {
                 </div>
             </div>
             <div class="md:absolute text-left md:bottom-0 md:w-full lg:right-0 lg:inset-y-0 lg:w-4/6" id="container_right">
-                <div class="width-full album_info_outer m-4">
+                <div class="width-full album_info_outer p-4">
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
                         <h3 class="col-span-3 m-2 text-left float-left text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl">{&detail.name}</h3>
                     </div>

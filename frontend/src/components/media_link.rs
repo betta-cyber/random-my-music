@@ -122,15 +122,20 @@ pub fn MediaLink(props: &Props) -> Html {
             }
             "bandcamp" => {
                 let mut url = "";
-                for (kk, vv) in v.as_object().unwrap() {
-                    match vv.get("default") {
+                for (__, vv) in v.as_object().unwrap() {
+                    let m = match vv.get("default") {
                         Some(default) => {
                             if default.as_bool().unwrap() {
-                                url = kk;
+                               Some(vv.get("url").unwrap().as_str().unwrap())
+                            } else {
+                                None
                             }
                         },
-                        None => {}
+                        None => {None}
                     };
+                    if let Some(m) = m {
+                        url = m;
+                    }
                 };
                 let link = format!("https://{}", url);
                 Some(Link {
