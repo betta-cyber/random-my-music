@@ -70,6 +70,7 @@ pub fn Menu() -> Html {
                     <li><a href="/" >{"Home"}</a></li>
                     if let Some(user) = user {
                         <li><a href="/profile" onclick={onclick.clone()}>{ user.username }</a></li>
+                        <li><a href="/history" onclick={onclick.clone()}>{ "History" }</a></li>
                         <li><a onclick={logout}>{"Sign out"}</a></li>
                     } else {
                         <li><a href="/sign_in" onclick={onclick.clone()}>{"Sign in"}</a></li>

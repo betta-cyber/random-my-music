@@ -21,6 +21,7 @@ use redis::{AsyncCommands, Client};
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Sha3_256};
 use sqlx::mysql::{MySql, MySqlPool, MySqlPoolOptions};
+use sqlx::Row;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use tower_http::cors::{Any, CorsLayer};
@@ -107,7 +108,7 @@ async fn main() {
         .route("/today", get(get_today_album))
         .route("/album/:album_id", get(get_album_detail))
         .route("/genres", get(genres))
-        // .route("/user_album_log", post(add_user_album_log))
+        .route("/user_album_log", get(get_user_album_log))
         .layer(cors)
         // .route_layer(from_extractor::<RequireAuth>())
         .layer(SetResponseHeaderLayer::overriding(
@@ -151,7 +152,7 @@ async fn get_today_album(
     session: ReadableSession,
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
-    let client_id = args.client_id.to_string();
+    let client_id = args.client_id;
     let mut con = state.redis.get_async_connection().await.unwrap();
     let res: String = con.get(&client_id).await.unwrap_or_default();
     if res.is_empty() {
@@ -182,7 +183,6 @@ async fn get_today_album(
                 }
             }
         };
-        // println!("{:#?}, {:#?}", fresh_time, user_genres);
         let album_list = if user_genres.is_empty() {
             sqlx::query_as::<MySql, Album>(
                 r#"SELECT r1.id, name, cover
@@ -200,7 +200,7 @@ async fn get_today_album(
             let search_query = &search_query[3..];
             let search_query = format!("({})", search_query);
             let sql = format!(
-                r#"SELECT r1.id, name, cover FROM album AS r1 right join album_genre r2
+                r#"SELECT r1.id, name, cover FROM album AS r1 left join album_genre r2
             on r1.id = r2.album_id where locate("cdn", r1.cover) and {}
             ORDER BY rand() ASC LIMIT 40"#,
                 search_query
@@ -280,13 +280,13 @@ async fn get_album_detail(
             if user_id != 0 {
                 let album_genre: String = genres.iter().map(|g| {&*g.genre}).collect::<Vec<&str>>().join("|");
                 let sql = format!(
-                    r#"select id, album_id, album_genre, click_count, listen_count from user_album_log where user_id = '{}' and album_id = '{}'"#,
+                    r#"select id, click_count, listen_count from user_album_log where user_id = '{}' and album_id = '{}'"#,
                     user_id, detail.id,
                 );
-                match sqlx::query_as::<MySql, UserAlbumLog>(&sql).fetch_one(&state.db).await {
+                match sqlx::query(&sql).fetch_one(&state.db).await {
                     Ok(res) => {
                         let update_sql = format!(r#"UPDATE user_album_log set click_count = {}, listen_count
-                            = {} WHERE id = {}"#, res.click_count+1, res.listen_count+1, res.id);
+                            = {} WHERE id = {}"#, res.get::<i32, usize>(1)+1, res.get::<i32, usize>(2)+1, res.get::<i32, usize>(0));
                         sqlx::query(&update_sql).execute(&state.db).await.unwrap();
                     }
                     Err(e) => {
@@ -594,46 +594,63 @@ async fn user_config(
     }
 }
 
+#[derive(Deserialize)]
+pub struct Pagination {
+    pub page: usize,
+    pub page_size: usize,
+}
+
+impl Default for Pagination {
+    fn default() -> Self {
+        Self {
+            page: 1,
+            page_size: 40,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, sqlx::FromRow)]
 pub struct UserAlbumLog {
-    id: i32,
     album_id: String,
-    album_genre: String,
+    album_name: String,
+    cover: String,
     click_count: i32,
     listen_count: i32,
 }
 
-// async fn get_user_album_log(
-    // Extension(state): Extension<MyShared>,
-    // session: ReadableSession,
-// ) -> impl IntoResponse {
-    // let user_id: i32 = session.get("user_id").unwrap_or_default();
+async fn get_user_album_log(
+    pagination: Option<Query<Pagination>>,
+    Extension(state): Extension<MyShared>,
+    session: ReadableSession,
+) -> impl IntoResponse {
+    let user_id: i32 = session.get("user_id").unwrap_or_default();
+    let Query(pagination) = pagination.unwrap_or_default();
 
-    // let sql = format!(
-        // r#"select id from user_album_log where user_id = '{}', album_id = '{}'"#,
-        // user_id, payload.album_id,
-    // );
-    // match sqlx::query_as::<MySql, UserAlbumLog>(&sql).fetch_one(&state.db).await {
-        // Ok(res) => {
-            // let update_sql = format!(r#"UPDATE user_album_log set click_count = {}, listen_count
-                // = {} FROM WHERE id = {})"#, res.click_count+1, res.listen_count+1, res.id);
-            // sqlx::query(&update_sql).execute(&state.db).await.unwrap();
-            // let resp = serde_json::json!({
-                // "code": 200,
-                // "msg": "success",
-                // "data": {}
-            // });
-            // return (StatusCode::OK, Json(resp));
-        // }
-        // Err(_) => {
-            // let insert_sql = format!(r#"INSERT INTO user_album_log (user_id, album_id, album_genre, click_count,
-                // listen_count) VALUES ("{}", "{}", "{}", 1, 1) "#, user_id, &payload.album_id, &payload.album_genre);
-            // sqlx::query(&insert_sql).execute(&state.db).await.unwrap();
-            // let resp = serde_json::json!({
-                // "code": 400,
-                // "msg": "success"
-            // });
-            // return (StatusCode::BAD_REQUEST, Json(resp));
-        // }
-    // }
-// }
+    let sql = format!(
+        r#"select album_id, r2.name as album_name, r2.cover, click_count, listen_count from
+        user_album_log as r1 left join album as r2 on r1.album_id = r2.id
+        where r1.user_id = '{}' ORDER BY r1.update_time desc limit {}, {}"#,
+        user_id, pagination.page_size*(pagination.page-1), pagination.page_size
+    );
+    match sqlx::query_as::<MySql, UserAlbumLog>(&sql).fetch_all(&state.db).await {
+        Ok(res) => {
+            let resp = serde_json::json!({
+                "code": 200,
+                "msg": "success",
+                "data": {
+                    "res": res,
+                    "page": pagination.page,
+                    "page_size": pagination.page_size,
+                }
+            });
+            return (StatusCode::OK, Json(resp));
+        }
+        Err(_) => {
+            let resp = serde_json::json!({
+                "code": 400,
+                "msg": "success"
+            });
+            return (StatusCode::BAD_REQUEST, Json(resp));
+        }
+    }
+}

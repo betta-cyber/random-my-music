@@ -69,3 +69,12 @@ pub struct Genre {
     pub name: String,
     pub key_name: String,
 }
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct AlbumLog {
+    pub album_id: String,
+    pub album_name: String,
+    pub cover: String,
+    pub click_count: i32,
+    pub listen_count: i32,
+}

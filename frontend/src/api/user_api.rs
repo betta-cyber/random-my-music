@@ -1,5 +1,5 @@
 use serde::de::Deserialize;
-use super::types::{ErrorResponse, JsonResponse, Album, AlbumDetail, Genre, User};
+use super::types::{ErrorResponse, JsonResponse, Album, AlbumDetail, Genre, User, AlbumLog};
 use gloo_net::http::{Request, RequestCredentials};
 #[allow(unused)]
 use crate::{app::log, console_log};
@@ -181,6 +181,27 @@ pub async fn user_config_api(json: &str) -> Result<JsonResponse, String> {
             let res = convert_result::<JsonResponse>(&response);
             match res {
                 Ok(data) => Ok(data),
+                Err(_) => Err("Failed to parse response".to_string()),
+            }
+        }
+        Err(e) => Err(e)
+    }
+}
+
+
+pub async fn album_log_api(page: usize, page_size: usize) -> Result<Vec<AlbumLog>, String> {
+    let url = format!("{}/user_album_log?page_size={}&page={}", BASE_URL, page_size, page);
+    match make_request(&url, "GET", None).await {
+        Ok(response) => {
+            let res = convert_result::<JsonResponse>(&response);
+            match res {
+                Ok(data) => {
+                    let serialized = serde_json::to_string(&data.data.get("res")).unwrap();
+                    match serde_json::from_str::<Vec<AlbumLog>>(&serialized) {
+                        Ok(genres) => {Ok(genres)},
+                        Err(_) => Err("Failed to parse response".to_string()),
+                    }
+                }
                 Err(_) => Err("Failed to parse response".to_string()),
             }
         }

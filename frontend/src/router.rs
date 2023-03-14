@@ -8,6 +8,7 @@ use crate::pages::{
     album_page::AlbumPage,
     about_page::AboutPage,
     profile_page::ProfilePage,
+    history_page::HistoryPage,
 };
 
 #[derive(Clone, Routable, PartialEq)]
@@ -24,6 +25,8 @@ pub enum Route {
     About,
     #[at("/profile")]
     Profile,
+    #[at("/history")]
+    History,
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -48,6 +51,9 @@ pub fn switch(routes: Route) -> Html {
         },
         Route::Profile => html! {
             <ProfilePage />
+        },
+        Route::History => html! {
+            <HistoryPage />
         },
         Route::NotFound => html! {
             <h1>{ "404" }</h1>
