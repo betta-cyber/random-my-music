@@ -191,14 +191,8 @@ async fn get_today_album(
             .fetch_all(&state.db)
             .await
         } else {
-            let genre_list = user_genres.split(",");
-            let mut search_query = String::new();
-            for genre in genre_list {
-                let g = format!(" or r2.genre like '%{}%'", genre);
-                search_query.push_str(&g);
-            }
-            let search_query = &search_query[3..];
-            let search_query = format!("({})", search_query);
+            let search_key = user_genres.replace(",", "|");
+            let search_query = format!(r#"r2.genre in (select name from genres where path REGEXP '^({})')"#, search_key);
             let sql = format!(
                 r#"SELECT r1.id, name, cover FROM album AS r1 left join album_genre r2
             on r1.id = r2.album_id where locate("cdn", r1.cover) and {}
@@ -529,13 +523,12 @@ pub struct Genre {
 }
 
 async fn genres(Extension(state): Extension<MyShared>) -> impl IntoResponse {
-    let sql = format!(r#"select id, name, key_name from genre where parents = """#);
+    let sql = format!(r#"select id, name, key_name from genres where parents = """#);
     match sqlx::query_as::<MySql, Genre>(&sql)
         .fetch_all(&state.db)
         .await
     {
         Ok(genres) => {
-            // println!("found user {genres:#?}");
             let resp = serde_json::json!({
                 "code": 200,
                 "msg": "success",
@@ -629,7 +622,7 @@ async fn get_user_album_log(
     let sql = format!(
         r#"select album_id, r2.name as album_name, r2.cover, click_count, listen_count from
         user_album_log as r1 left join album as r2 on r1.album_id = r2.id
-        where r1.user_id = '{}' ORDER BY r1.update_time desc limit {}, {}"#,
+        where r1.user_id = '{}' ORDER BY r1.create_time desc limit {}, {}"#,
         user_id, pagination.page_size*(pagination.page-1), pagination.page_size
     );
     match sqlx::query_as::<MySql, UserAlbumLog>(&sql).fetch_all(&state.db).await {
