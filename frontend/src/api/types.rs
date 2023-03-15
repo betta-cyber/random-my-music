@@ -39,7 +39,7 @@ pub struct ErrorResponse {
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Album {
     pub id: i32,
-    pub name: String,
+    // pub name: String,
     pub cover: String,
 }
 

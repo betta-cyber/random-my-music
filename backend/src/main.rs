@@ -149,20 +149,25 @@ pub struct SubjectArgs {
 
 async fn get_today_album(
     Query(args): Query<SubjectArgs>,
+    pagination: Option<Query<Pagination>>,
     session: ReadableSession,
     Extension(state): Extension<MyShared>,
 ) -> impl IntoResponse {
     let client_id = args.client_id;
-    let mut con = state.redis.get_async_connection().await.unwrap();
-    let res: String = con.get(&client_id).await.unwrap_or_default();
-    if res.is_empty() {
+    let Query(pagination) = pagination.unwrap_or_default();
+    let page_client_id = format!("{}_{}", client_id, pagination.page);
 
+    let mut con = state.redis.get_async_connection().await.unwrap();
+    let res: String = con.get(&page_client_id).await.unwrap_or_default();
+    if res.is_empty() {
         let (fresh_time, user_genres) = match session.get::<usize>("fresh_time") {
+            // try get data in session
             Some(fresh_time) => {
                 let user_genres: String = session.get("user_genres").unwrap_or_default();
                 (fresh_time, user_genres)
             }
             None => {
+                // try get data in database
                 let sql = format!(
                     r#"SELECT id, username, email, password, session_id, genre_data, fresh_time from rym_user where
                                   session_id like "%{}%""#,
@@ -183,21 +188,21 @@ async fn get_today_album(
                 }
             }
         };
+        // no genres settings
         let album_list = if user_genres.is_empty() {
-            sqlx::query_as::<MySql, Album>(
-                r#"SELECT r1.id, name, cover
-                FROM album AS r1 where locate("cdn", r1.cover) ORDER BY rand() ASC LIMIT 40"#,
-            )
+            let sql = format!(r#"SELECT r1.id, name, cover FROM album AS r1 where locate("cdn", r1.cover) ORDER BY rand() ASC LIMIT {}"#, pagination.page_size);
+            sqlx::query_as::<MySql, Album>(&sql)
             .fetch_all(&state.db)
             .await
         } else {
+            // use user genres settings
             let search_key = user_genres.replace(",", "|");
             let search_query = format!(r#"r2.genre in (select name from genres where path REGEXP '^({})')"#, search_key);
             let sql = format!(
                 r#"SELECT r1.id, name, cover FROM album AS r1 left join album_genre r2
             on r1.id = r2.album_id where locate("cdn", r1.cover) and {}
-            ORDER BY rand() ASC LIMIT 40"#,
-                search_query
+            ORDER BY rand() ASC LIMIT {}"#,
+                search_query, pagination.page_size
             );
             sqlx::query_as::<MySql, Album>(&sql)
                 .fetch_all(&state.db)
@@ -206,7 +211,7 @@ async fn get_today_album(
         if let Ok(album_list) = album_list {
             let json = serde_json::to_string(&album_list).unwrap();
             let _: () = con
-                .set_ex(&client_id, &json, fresh_time * 60)
+                .set_ex(&page_client_id, &json, fresh_time * 60)
                 .await
                 .unwrap();
             return json;

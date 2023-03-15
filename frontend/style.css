@@ -108,8 +108,10 @@ button {
 
 .album {
   position: relative;
-  width: 25vw;
-  height: 25vw;
+  /* width: 25vw; */
+  /* height: 25vw; */
+  width: 50vw;
+  height: 50vw;
   break-inside: avoid;
   display: inline-flex;
   float: left;
@@ -151,9 +153,9 @@ img {
   }
 }
 
-::-webkit-scrollbar {
-  display: none; /* Chrome Safari */
-}
+/* ::-webkit-scrollbar { */
+  /* display: none; [> Chrome Safari <] */
+/* } */
 
 
 .menu {

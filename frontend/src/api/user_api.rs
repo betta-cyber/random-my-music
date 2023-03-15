@@ -105,8 +105,8 @@ pub async fn register_api(credentials: &str) -> Result<JsonResponse, String> {
     }
 }
 
-pub async fn today_album_api(client_id: &str) -> Result<Vec<Album>, String> {
-    let url = format!("{}/today?client_id={}", BASE_URL, client_id);
+pub async fn today_album_api(client_id: &str, page: i32, page_size: i32) -> Result<Vec<Album>, String> {
+    let url = format!("{}/today?client_id={}&page={}&page_size={}", BASE_URL, client_id, page, page_size);
     match make_request(&url, "GET", None).await {
         Ok(response) => {
             let res = convert_result::<Vec<Album>>(&response);
