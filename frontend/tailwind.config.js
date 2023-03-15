@@ -14,9 +14,7 @@ module.exports = {
         'ct-yellow-600': '#f9d13e',
         'ct-red-500': '#ef4444',
       },
-      fontFamily: {
-        Poppins: ['Poppins, sans-serif'],
-      },
+      fontFamily: {},
       container: {
         center: true,
         // padding: '1rem',

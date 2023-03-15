@@ -93,10 +93,15 @@ pub fn home() -> Html {
         }, ());
     }
 
+    let window = web_sys::window().expect("no global `window` exists");
+    console_log!("{:#?}", window);
+
     html! {
-        items.iter().map(|album| {
-            let album = album.clone();
-            html!{ <AlbumCover album={album} /> }
-        }).collect::<Html>()
+        {
+            items.iter().map(|album| {
+                let album = album.clone();
+                html!{ <AlbumCover album={album} /> }
+            }).collect::<Html>()
+        }
     }
 }

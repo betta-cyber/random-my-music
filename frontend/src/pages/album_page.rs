@@ -44,6 +44,7 @@ pub fn album(props: &DetailProps) -> Html {
         }, ());
     }
 
+
     let mut genre_pri_text = "".to_string();
     let mut genre_sec_text = "".to_string();
     let mut genres: Vec<String> = vec![];
@@ -78,41 +79,41 @@ pub fn album(props: &DetailProps) -> Html {
             <div class="md:absolute text-left md:bottom-0 md:w-full lg:right-0 lg:inset-y-0 lg:w-4/6" id="container_right">
                 <div class="width-full album_info_outer p-4">
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
-                        <h3 class="col-span-3 m-2 text-left float-left text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl">{&detail.name}</h3>
+                        <h3 class="col-span-3 m-2 text-left float-left text-2xl font-bold tracking-tight text-white sm:text-4xl">{&detail.name}</h3>
                     </div>
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
-                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Artist"}</span>
-                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-gray-900 sm:text-3xl">{&detail.artist}</span>
+                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-white sm:text-3xl">{"Artist"}</span>
+                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-white sm:text-3xl">{&detail.artist}</span>
                     </div>
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
-                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Rate"}</span>
-                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-gray-900 sm:text-3xl">{&detail.rate}</span>
+                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-white sm:text-3xl">{"Rate"}</span>
+                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-white sm:text-3xl">{&detail.rate}</span>
                     </div>
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
-                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Genres"}</span>
-                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-gray-900 sm:text-3xl">
+                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-white sm:text-3xl">{"Genres"}</span>
+                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-white sm:text-3xl">
                         {
                             detail.genres.clone().into_iter().map(|g| {
                                 if g.genre_type == "pri" {
-                                    html!{ <><a class="mr-2 tracking-tight text-gray-900 font-normal">{&g.genre}</a><br/></>}
+                                    html!{ <><a class="mr-2 text-xl tracking-tight text-white font-normal">{&g.genre}</a><br/></>}
                                 } else {
-                                    html!{<a class="mr-2 text-xl tracking-tight text-gray-900 font-normal">{&g.genre}</a>}
+                                    html!{<a class="mr-2 text-lg tracking-tight text-white font-normal sm:text-xl">{&g.genre}</a>}
                                 }
                             }).collect::<Html>()
                         }
                         </span>
                     </div>
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
-                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Released"}</span>
-                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-gray-900 sm:text-3xl">{&detail.released}</span>
+                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-white sm:text-3xl">{"Released"}</span>
+                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-white sm:text-3xl">{&detail.released}</span>
                     </div>
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
-                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Language"}</span>
-                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-gray-900 sm:text-3xl">{&detail.language}</span>
+                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-white sm:text-3xl">{"Language"}</span>
+                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-white sm:text-3xl">{&detail.language}</span>
                     </div>
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8 ">
-                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-gray-900 sm:text-3xl">{"Descriptors"}</span>
-                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-gray-900 sm:text-3xl">{&detail.descriptors}</span>
+                        <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-white sm:text-3xl">{"Descriptors"}</span>
+                        <span class="col-span-2 break-all m-2 float-left text-lg tracking-tight text-white sm:text-xl">{&detail.descriptors}</span>
                     </div>
                 </div>
             </div>
