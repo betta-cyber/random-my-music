@@ -331,3 +331,41 @@ img {
     height: 100%;
     will-change: transform;
 }
+
+.pagination {
+    display: flex;
+    padding-left: 0;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    /* float: right; */
+}
+
+.pagination ul {
+    display: block;
+    list-style-type: disc;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    padding-inline-start: 40px;
+}
+
+.page-link {
+    position: relative;
+    float: left;
+    padding: 0.5rem 0.75rem;
+    margin-left: -1px;
+    color: #fff;
+    text-decoration: none;
+    /* background-color: #fff; */
+    border: 1px solid #ddd;
+}
+
+.page-item.active .page-link, .page-item.active .page-link:focus, .page-item.active .page-link:hover {
+    z-index: 2;
+    color: #fff;
+    cursor: default;
+    background-color: #0b0bd4;
+    /* border-color: #5CB85C; */
+}

@@ -10,45 +10,48 @@ use crate::{
 };
 // use serde::{Deserialize, Serialize};
 use yew::prelude::*;
-// use yew_router::prelude::*;
-use yewdux::prelude::*;
+use yew_hooks::use_async;
+// use yewdux::prelude::*;
 
 
 #[function_component(HistoryPage)]
 pub fn history_page() -> Html {
-    let (store, dispatch) = use_store::<Store>();
-    let user = store.auth_user.clone();
-    let album_logs: yew::UseStateHandle<Vec<AlbumLog>> = use_state(|| vec![]);
+    // let (store, dispatch) = use_store::<Store>();
+    // let user = store.auth_user.clone();
     let current_page = use_state(|| 1u32);
-    let total = use_state(|| 1u32);
+
+    let album_logs = {
+        let current_page = current_page.clone();
+        use_async(async move {
+            match album_log_api(*current_page, 40).await {
+                Ok(data) => Ok(data),
+                Err(e) => Err(e)
+            }
+        })
+    };
+
+    {
+        let current_page = current_page.clone();
+        use_effect_with_deps(
+            move |_| {
+                // Reset to first page
+                current_page.set(1);
+                || ()
+            },
+            (),
+        );
+    }
+
 
     {
         let album_logs = album_logs.clone();
-        let dispatch = dispatch.clone();
-        let current_page = current_page.clone();
-        let total = total.clone();
-        use_effect_with_deps(move |_| {
-            let dispatch = dispatch.clone();
-            let current_page = current_page.clone();
-            let album_logs = album_logs.clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                set_page_loading(true, dispatch.clone());
-                let response = album_log_api(*current_page, 40).await;
-                match response {
-                    Ok(data) => {
-                        album_logs.set(data.res);
-                        current_page.set(data.page);
-                        total.set(data.total);
-                        set_page_loading(false, dispatch);
-                    }
-                    Err(e) => {
-                        set_page_loading(false, dispatch.clone());
-                        set_show_alert(e.to_string(), dispatch.clone());
-                    }
-                }
-            });
-        },
-        ());
+        use_effect_with_deps(
+            move |_| {
+                album_logs.run();
+                || ()
+            },
+            *current_page,
+        );
     }
 
     let callback = {
@@ -65,8 +68,13 @@ pub fn history_page() -> Html {
     <>
     <div class="mx-auto overflow-hidden p-8 space-y-5 text-left">
       <p class="text-4xl font-semibold">{"History"}</p>
-      if let Some(_) = user {
+      if let Some(data) = album_logs.data.clone() {
           <div>
+              <ListPagination
+                total_count={data.total}
+                current_page={data.page}
+                callback={callback.clone()}
+              />
               <table class="table-auto border-spacing-px border">
                   <thead>
                     <tr>
@@ -78,7 +86,7 @@ pub fn history_page() -> Html {
                   </thead>
                   <tbody>
                       {
-                          album_logs.iter().map(|l| {
+                          data.res.iter().map(|l| {
                               let l = l.clone();
                               html! {
                                   <tr>
@@ -95,8 +103,8 @@ pub fn history_page() -> Html {
                   </tbody>
               </table>
               <ListPagination
-                total_count={*total}
-                current_page={*current_page}
+                total_count={data.total}
+                current_page={data.page}
                 callback={callback}
               />
           </div>
