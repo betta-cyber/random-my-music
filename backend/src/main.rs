@@ -108,6 +108,7 @@ async fn main() {
         .route("/today", get(get_today_album))
         .route("/album/:album_id", get(get_album_detail))
         .route("/genres", get(genres))
+        .route("/genre/:genre", get(get_genre_album))
         .route("/user_album_log", get(get_user_album_log))
         .layer(cors)
         // .route_layer(from_extractor::<RequireAuth>())
@@ -209,6 +210,16 @@ async fn get_today_album(
                 .await
         };
         if let Ok(album_list) = album_list {
+            // let mut res: Vec<Album> = vec![];
+            // if pagination.page > 1 {
+                // for i in 1..pagination.page - 1 {
+                    // let page_client_id = format!("{}_{}", client_id, i);
+                    // let r: String = con.get(&page_client_id).await.unwrap_or_default();
+                    // let v: Vec<Album> = serde_json::from_str(&r).unwrap();
+                    // res.extend(v);
+                // }
+            // }
+            // res.extend(album_list);
             let json = serde_json::to_string(&album_list).unwrap();
             let _: () = con
                 .set_ex(&page_client_id, &json, fresh_time * 60)
@@ -520,6 +531,8 @@ async fn user_info(
     }
 }
 
+
+
 #[derive(Debug, Clone, Deserialize, Serialize, sqlx::FromRow)]
 pub struct Genre {
     id: i32,
@@ -659,6 +672,60 @@ async fn get_user_album_log(
             let resp = serde_json::json!({
                 "code": 400,
                 "msg": "success"
+            });
+            return (StatusCode::BAD_REQUEST, Json(resp));
+        }
+    }
+}
+
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, sqlx::FromRow)]
+pub struct AlbumChart {
+    id: i32,
+    name: String,
+    artist: String,
+    cover: String,
+    rate: String,
+}
+
+async fn get_genre_album(
+    pagination: Option<Query<Pagination>>,
+    Path(genre): Path<String>,
+    Extension(state): Extension<MyShared>,
+    // session: ReadableSession,
+) -> impl IntoResponse {
+    // let user_id: i32 = session.get("user_id").unwrap_or_default();
+    let Query(pagination) = pagination.unwrap_or_default();
+
+    let total_sql = format!("SELECT count(*) AS total FROM album left join album_genre on album.id = album_genre.album_id where genre = '{}'", genre);
+    let total_count = sqlx::query_as::<_, TotalResponse>(&total_sql)
+        .fetch_one(&state.db)
+        .await.unwrap();
+
+    let sql = format!(
+        r#"select r1.id, r1.name, r1.artist, r1.cover, r3.rate from album as r1 left join album_genre as r2 on r1.id = r2.album_id
+        left join album_detail as r3 on r1.id = r3.album_id where r2.genre = "{}"
+        order by r3.rate desc limit {},{}"#,
+        genre, pagination.page_size*(pagination.page-1), pagination.page_size
+    );
+    match sqlx::query_as::<MySql, AlbumChart>(&sql).fetch_all(&state.db).await {
+        Ok(res) => {
+            let resp = serde_json::json!({
+                "code": 200,
+                "msg": "success",
+                "data": {
+                    "res": res,
+                    "page": pagination.page,
+                    "page_size": pagination.page_size,
+                    "total": total_count.total,
+                }
+            });
+            return (StatusCode::OK, Json(resp));
+        }
+        Err(_) => {
+            let resp = serde_json::json!({
+                "code": 400,
+                "msg": "failed"
             });
             return (StatusCode::BAD_REQUEST, Json(resp));
         }

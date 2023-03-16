@@ -43,6 +43,7 @@ pub struct Album {
     pub cover: String,
 }
 
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct AlbumGenre {
     pub genre: String,
@@ -82,6 +83,24 @@ pub struct AlbumLog {
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct AlbumLogData {
     pub res: Vec<AlbumLog>,
+    pub total: u32,
+    pub page: u32,
+    pub page_size: u32,
+}
+
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct GenreAlbum {
+    pub id: u32,
+    pub name: String,
+    pub artist: String,
+    pub cover: String,
+    pub rate: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct GenreData {
+    pub res: Vec<GenreAlbum>,
     pub total: u32,
     pub page: u32,
     pub page_size: u32,

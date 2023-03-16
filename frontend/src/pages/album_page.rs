@@ -94,10 +94,11 @@ pub fn album(props: &DetailProps) -> Html {
                         <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-white sm:text-3xl">
                         {
                             detail.genres.clone().into_iter().map(|g| {
+                                let url = format!("/genre/{}", &g.genre);
                                 if g.genre_type == "pri" {
-                                    html!{ <><a class="mr-2 text-xl tracking-tight text-white font-normal">{&g.genre}</a><br/></>}
+                                    html!{ <><a class="mr-2 text-xl tracking-tight text-white font-normal" href={url}>{&g.genre}</a><br/></>}
                                 } else {
-                                    html!{<a class="mr-2 text-lg tracking-tight text-white font-normal sm:text-xl">{&g.genre}</a>}
+                                    html!{<a class="mr-2 text-lg tracking-tight text-white font-normal sm:text-xl" href={url}>{&g.genre}</a>}
                                 }
                             }).collect::<Html>()
                         }
