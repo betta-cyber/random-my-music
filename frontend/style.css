@@ -108,10 +108,8 @@ button {
 
 .album {
   position: relative;
-  /* width: 25vw; */
-  /* height: 25vw; */
-  width: 50vw;
-  height: 50vw;
+  width: 25vw;
+  height: 25vw;
   break-inside: avoid;
   display: inline-flex;
   float: left;

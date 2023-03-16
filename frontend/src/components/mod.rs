@@ -4,3 +4,4 @@ pub mod loading_button;
 pub mod spinner;
 pub mod alert;
 pub mod media_link;
+pub mod list_pagination;

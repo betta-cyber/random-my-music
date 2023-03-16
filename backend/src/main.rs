@@ -592,6 +592,12 @@ async fn user_config(
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, sqlx::FromRow)]
+pub struct TotalResponse {
+    total: i32,
+}
+
+
 #[derive(Deserialize)]
 pub struct Pagination {
     pub page: usize,
@@ -624,6 +630,11 @@ async fn get_user_album_log(
     let user_id: i32 = session.get("user_id").unwrap_or_default();
     let Query(pagination) = pagination.unwrap_or_default();
 
+    let total_sql = format!("SELECT count(*) AS total FROM user_album_log WHERE user_id = '{}'", user_id);
+    let total_count = sqlx::query_as::<_, TotalResponse>(&total_sql)
+        .fetch_one(&state.db)
+        .await.unwrap();
+
     let sql = format!(
         r#"select album_id, r2.name as album_name, r2.cover, click_count, listen_count from
         user_album_log as r1 left join album as r2 on r1.album_id = r2.id
@@ -639,6 +650,7 @@ async fn get_user_album_log(
                     "res": res,
                     "page": pagination.page,
                     "page_size": pagination.page_size,
+                    "total": total_count.total,
                 }
             });
             return (StatusCode::OK, Json(resp));
