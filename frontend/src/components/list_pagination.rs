@@ -1,5 +1,4 @@
 use yew::prelude::*;
-use crate::{app::log, console_log};
 
 const ITEMS_PER_PAGE: u32 = 40;
 
@@ -18,7 +17,7 @@ pub fn list_pagination(props: &Props) -> Html {
     }
 
     // Calculate page numbers
-    let max_page = (props.total_count as f32 / 40.0).ceil() as u32;
+    let max_page = (props.total_count as f32 / ITEMS_PER_PAGE as f32).ceil() as u32;
     let mut pages: Vec<u32> = vec![];
     for page in 1..max_page + 1 {
         pages.push(page);
