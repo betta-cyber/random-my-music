@@ -2,7 +2,10 @@ use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 
-
+use crate::api::user_api::register_api;
+use crate::components::{form_input::FormInput, loading_button::LoadingButton};
+use crate::router::Route;
+use crate::store::{set_show_alert, Store};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
 use wasm_bindgen_futures::spawn_local;
@@ -10,11 +13,6 @@ use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::*;
-use crate::components::{form_input::FormInput, loading_button::LoadingButton};
-use crate::api::{user_api::register_api};
-use crate::store::{set_show_alert, Store};
-use crate::router::Route;
-
 
 #[derive(Validate, Debug, Default, Clone, Serialize, Deserialize)]
 struct RegisterUserSchema {

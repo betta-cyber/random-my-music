@@ -1,18 +1,18 @@
 #[allow(unused_imports)]
 use crate::{
-    api::user_api::{album_log_api},
     api::types::AlbumLog,
-    router::Route,
-    store::{set_auth_user, set_page_loading, set_show_alert, Store},
-    app::log, console_log,
+    api::user_api::album_log_api,
+    app::log,
     components::form_input::FormInput,
     components::list_pagination::ListPagination,
+    console_log,
+    router::Route,
+    store::{set_auth_user, set_page_loading, set_show_alert, Store},
 };
 // use serde::{Deserialize, Serialize};
 use yew::prelude::*;
 use yew_hooks::use_async;
 // use yewdux::prelude::*;
-
 
 #[function_component(HistoryPage)]
 pub fn history_page() -> Html {
@@ -25,7 +25,7 @@ pub fn history_page() -> Html {
         use_async(async move {
             match album_log_api(*current_page, 40).await {
                 Ok(data) => Ok(data),
-                Err(e) => Err(e)
+                Err(e) => Err(e),
             }
         })
     };
@@ -41,7 +41,6 @@ pub fn history_page() -> Html {
             (),
         );
     }
-
 
     {
         let album_logs = album_logs.clone();

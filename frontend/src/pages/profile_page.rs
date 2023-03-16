@@ -4,21 +4,21 @@ use std::rc::Rc;
 
 #[allow(unused_imports)]
 use crate::{
-    api::user_api::{user_info_api, genres_api, user_config_api},
+    api::user_api::{genres_api, user_config_api, user_info_api},
+    app::log,
+    components::form_input::FormInput,
+    console_log,
     router::Route,
     store::{set_auth_user, set_page_loading, set_show_alert, Store},
-    app::log, console_log,
-    components::form_input::FormInput,
 };
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
+use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
+use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::*;
-use web_sys::HtmlInputElement;
-use wasm_bindgen::JsCast;
-
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Validate)]
 struct ProfileSchema {
@@ -40,7 +40,6 @@ fn get_input_callback(
         cloned_form.set(data);
     })
 }
-
 
 #[function_component(ProfilePage)]
 pub fn profile_page() -> Html {
@@ -89,46 +88,49 @@ pub fn profile_page() -> Html {
         })
     };
 
-
     {
         let genres = genres.clone();
         let dispatch = dispatch.clone();
-        use_effect_with_deps(move |_| {
-            let dispatch = dispatch.clone();
-            let genres = genres.clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                set_page_loading(true, dispatch.clone());
-                let response = user_info_api().await;
-                match response {
-                    Ok(user) => {
-                        set_auth_user(Some(user), dispatch.clone());
-                    }
-                    Err(e) => {
-                        set_page_loading(false, dispatch.clone());
-                        if e.contains("not logged") {
-                            navigator.push(&Route::SignIn);
+        use_effect_with_deps(
+            move |_| {
+                let dispatch = dispatch.clone();
+                let genres = genres.clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    set_page_loading(true, dispatch.clone());
+                    let response = user_info_api().await;
+                    match response {
+                        Ok(user) => {
+                            set_auth_user(Some(user), dispatch.clone());
                         }
-                        set_show_alert(e.to_string(), dispatch.clone());
+                        Err(e) => {
+                            set_page_loading(false, dispatch.clone());
+                            if e.contains("not logged") {
+                                navigator.push(&Route::SignIn);
+                            }
+                            set_show_alert(e.to_string(), dispatch.clone());
+                        }
                     }
-                }
-                if let Ok(data) = genres_api().await {
-                    genres.set(data);
-                }
-                set_page_loading(false, dispatch);
-            });
-        },
-        ());
+                    if let Ok(data) = genres_api().await {
+                        genres.set(data);
+                    }
+                    set_page_loading(false, dispatch);
+                });
+            },
+            (),
+        );
     }
-
 
     let on_submit = {
         let fresh_time_input_ref = fresh_time_input_ref.clone();
         let store_dispatch = dispatch.clone();
         let user = user.clone();
-        Callback::from( move | _: MouseEvent | {
+        Callback::from(move |_: MouseEvent| {
             let mut user_genre: Vec<String> = vec![];
             let window = web_sys::window().expect("no global `window` exists");
-            let genres = window.document().unwrap().get_elements_by_class_name("genre");
+            let genres = window
+                .document()
+                .unwrap()
+                .get_elements_by_class_name("genre");
             for i in 0..genres.length() {
                 if let Ok(g) = genres.item(i).unwrap().dyn_into::<HtmlInputElement>() {
                     if g.checked() {
@@ -138,8 +140,16 @@ pub fn profile_page() -> Html {
             }
             let genre_str = user_genre.join(",");
             let fresh_time_input_ref = fresh_time_input_ref.clone();
-            let fresh_time_input = fresh_time_input_ref.cast::<HtmlInputElement>().unwrap().value().parse::<i32>().unwrap();
-            let form = ProfileSchema { genres: genre_str.clone(), fresh_time: fresh_time_input.to_string()};
+            let fresh_time_input = fresh_time_input_ref
+                .cast::<HtmlInputElement>()
+                .unwrap()
+                .value()
+                .parse::<i32>()
+                .unwrap();
+            let form = ProfileSchema {
+                genres: genre_str.clone(),
+                fresh_time: fresh_time_input.to_string(),
+            };
             let dispatch = store_dispatch.clone();
             let user = user.clone();
 
@@ -165,7 +175,6 @@ pub fn profile_page() -> Html {
             });
         })
     };
-
 
     html! {
     <>

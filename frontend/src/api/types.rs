@@ -1,6 +1,6 @@
 // use chrono::prelude::*;
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq, Clone)]
@@ -43,7 +43,6 @@ pub struct Album {
     pub cover: String,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct AlbumGenre {
     pub genre: String,
@@ -61,7 +60,7 @@ pub struct AlbumDetail {
     pub released: String,
     pub language: String,
     pub rate: String,
-    pub genres: Vec<AlbumGenre>
+    pub genres: Vec<AlbumGenre>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -87,7 +86,6 @@ pub struct AlbumLogData {
     pub page: u32,
     pub page_size: u32,
 }
-
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct GenreAlbum {

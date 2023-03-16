@@ -2,6 +2,13 @@ use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 
+use crate::api::types::User;
+use crate::api::user_api::login_api;
+use crate::components::{form_input::FormInput, loading_button::LoadingButton};
+use crate::router::Route;
+use crate::store::{set_auth_user, set_page_loading, set_show_alert, Store};
+use gloo::storage::LocalStorage;
+use gloo_storage::Storage;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
 use wasm_bindgen_futures::spawn_local;
@@ -9,31 +16,19 @@ use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::*;
-use gloo::storage::LocalStorage;
-use gloo_storage::Storage;
-use crate::components::{form_input::FormInput, loading_button::LoadingButton};
-use crate::api::{user_api::login_api};
-use crate::store::{Store, set_show_alert, set_page_loading, set_auth_user};
-use crate::router::Route;
-use crate::api::types::User;
 // use crate::{app::log, console_log};
-
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Validate)]
 struct LoginSchema {
-    #[validate(
-        length(min = 1, message = "Username is required"),
-    )]
+    #[validate(length(min = 1, message = "Username is required"))]
     username: String,
     #[validate(
         length(min = 1, message = "Password is required"),
         length(min = 6, message = "Password must be at least 6 characters")
     )]
     password: String,
-    client_id: Option<String>
+    client_id: Option<String>,
 }
-
-
 
 fn get_input_callback(
     name: &'static str,
@@ -52,7 +47,6 @@ fn get_input_callback(
 
 #[function_component(SignInPage)]
 pub fn sign_in() -> Html {
-
     let (store, dispatch) = use_store::<Store>();
     let form = use_state(|| LoginSchema::default());
     let username_input_ref = NodeRef::default();
@@ -62,7 +56,6 @@ pub fn sign_in() -> Html {
 
     let handle_username_input = get_input_callback("username", form.clone());
     let handle_password_input = get_input_callback("password", form.clone());
-
 
     let validate_input_on_blur = {
         let cloned_form = form.clone();
@@ -108,7 +101,7 @@ pub fn sign_in() -> Html {
         let cloned_navigator = navigator.clone();
         let store_dispatch = dispatch.clone();
 
-        Callback::from( move | event: SubmitEvent | {
+        Callback::from(move |event: SubmitEvent| {
             event.prevent_default();
 
             let form = cloned_form.clone();
@@ -122,8 +115,8 @@ pub fn sign_in() -> Html {
                 let username_input = username_input_ref.cast::<HtmlInputElement>().unwrap();
                 let password_input = password_input_ref.cast::<HtmlInputElement>().unwrap();
                 let client_id: Option<String> = match LocalStorage::get("client_id") {
-                    Ok(client_id) => {Some(client_id)},
-                    Err(_) => {None}
+                    Ok(client_id) => Some(client_id),
+                    Err(_) => None,
                 };
                 let mut data = form_data.deref().clone();
                 data.client_id = client_id;

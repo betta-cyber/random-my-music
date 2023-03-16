@@ -1,13 +1,12 @@
+use crate::api::types::AlbumDetail;
+use crate::api::user_api::album_detail_api;
+use crate::components::media_link::MediaLink;
+use crate::store::{set_page_loading, Store};
+use web_sys::HtmlElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::*;
-use web_sys::HtmlElement;
-use crate::components::media_link::MediaLink;
-use crate::api::types::AlbumDetail;
-use crate::api::user_api::album_detail_api;
-use crate::store::{Store, set_page_loading};
 // use crate::{app::log, console_log};
-
 
 #[derive(Properties, PartialEq)]
 pub struct DetailProps {
@@ -24,26 +23,28 @@ pub fn album(props: &DetailProps) -> Html {
     {
         let store_dispatch = dispatch.clone();
         let detail = detail.clone();
-        use_effect_with_deps(move |_| {
-            let detail = detail.clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                let album_id = album_id.clone();
-                let dispatch = store_dispatch.clone();
-                set_page_loading(true, dispatch.clone());
-                match album_detail_api(&album_id).await {
-                    Ok(data) => {
-                        detail.set(data);
-                        set_page_loading(false, dispatch);
+        use_effect_with_deps(
+            move |_| {
+                let detail = detail.clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    let album_id = album_id.clone();
+                    let dispatch = store_dispatch.clone();
+                    set_page_loading(true, dispatch.clone());
+                    match album_detail_api(&album_id).await {
+                        Ok(data) => {
+                            detail.set(data);
+                            set_page_loading(false, dispatch);
+                        }
+                        Err(_) => {
+                            set_page_loading(false, dispatch);
+                        }
                     }
-                    Err(_) => {
-                        set_page_loading(false, dispatch);
-                    }
-                }
-            });
-            || ()
-        }, ());
+                });
+                || ()
+            },
+            (),
+        );
     }
-
 
     let mut genre_pri_text = "".to_string();
     let mut genre_sec_text = "".to_string();

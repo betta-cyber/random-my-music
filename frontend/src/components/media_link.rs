@@ -1,11 +1,9 @@
-
-use yew::prelude::*;
 use std::collections::HashMap;
+use yew::prelude::*;
 // use yew_router::prelude::Link;
 // use crate::router::Route;
 // use crate::console_log;
 // use crate::app::log;
-
 
 #[derive(Debug, PartialEq)]
 pub struct Link {
@@ -18,7 +16,6 @@ pub struct Link {
 pub struct Props {
     pub media_data: HashMap<String, serde_json::Value>,
 }
-
 
 #[function_component]
 pub fn MediaLink(props: &Props) -> Html {
@@ -34,7 +31,7 @@ pub fn MediaLink(props: &Props) -> Html {
                         Some(default) => {
                             if default.as_bool().unwrap() {
                                 spotify = kk;
-                                break
+                                break;
                             }
                         }
                         None => {}
@@ -44,9 +41,9 @@ pub fn MediaLink(props: &Props) -> Html {
                 Some(Link {
                     media_link: link,
                     title: "Spotify".to_string(),
-                    media_class: "ui_media_link_btn ui_media_link_btn_spotify".to_string()
+                    media_class: "ui_media_link_btn ui_media_link_btn_spotify".to_string(),
                 })
-            },
+            }
             "netease" => {
                 let mut netease = "";
                 for (kk, vv) in v.as_object().unwrap() {
@@ -54,7 +51,7 @@ pub fn MediaLink(props: &Props) -> Html {
                         Some(default) => {
                             if default.as_bool().unwrap() {
                                 netease = kk;
-                                break
+                                break;
                             }
                         }
                         None => {}
@@ -64,9 +61,9 @@ pub fn MediaLink(props: &Props) -> Html {
                 Some(Link {
                     media_link: link,
                     title: "Netease".to_string(),
-                    media_class: "ui_media_link_btn ui_media_link_btn_netease".to_string()
+                    media_class: "ui_media_link_btn ui_media_link_btn_netease".to_string(),
                 })
-            },
+            }
             "qqmusic" => {
                 let mut qqmusic = "";
                 for (kk, vv) in v.as_object().unwrap() {
@@ -74,7 +71,7 @@ pub fn MediaLink(props: &Props) -> Html {
                         Some(default) => {
                             if default.as_bool().unwrap() {
                                 qqmusic = kk;
-                                break
+                                break;
                             }
                         }
                         None => {}
@@ -84,7 +81,7 @@ pub fn MediaLink(props: &Props) -> Html {
                 Some(Link {
                     media_link: link,
                     title: "QQMusic".to_string(),
-                    media_class: "ui_media_link_btn ui_media_link_btn_qqmusic".to_string()
+                    media_class: "ui_media_link_btn ui_media_link_btn_qqmusic".to_string(),
                 })
             }
             "applemusic" => {
@@ -99,25 +96,28 @@ pub fn MediaLink(props: &Props) -> Html {
                             } else {
                                 None
                             }
-                        },
-                        None => {
-                            None
                         }
+                        None => None,
                     };
                     if let Some(a) = a {
                         album = Some(a);
                     }
-                };
+                }
                 match album {
                     Some(album) => {
-                        let link = format!("https://geo.music.apple.com/gb/album/{}/{}", album.as_str(), applemusic);
+                        let link = format!(
+                            "https://geo.music.apple.com/gb/album/{}/{}",
+                            album.as_str(),
+                            applemusic
+                        );
                         Some(Link {
                             media_link: link,
                             title: "Apple Music".to_string(),
-                            media_class: "ui_media_link_btn ui_media_link_btn_applemusic".to_string()
+                            media_class: "ui_media_link_btn ui_media_link_btn_applemusic"
+                                .to_string(),
                         })
                     }
-                    None => {None}
+                    None => None,
                 }
             }
             "bandcamp" => {
@@ -126,22 +126,22 @@ pub fn MediaLink(props: &Props) -> Html {
                     let m = match vv.get("default") {
                         Some(default) => {
                             if default.as_bool().unwrap() {
-                               Some(vv.get("url").unwrap().as_str().unwrap())
+                                Some(vv.get("url").unwrap().as_str().unwrap())
                             } else {
                                 None
                             }
-                        },
-                        None => {None}
+                        }
+                        None => None,
                     };
                     if let Some(m) = m {
                         url = m;
                     }
-                };
+                }
                 let link = format!("https://{}", url);
                 Some(Link {
                     media_link: link,
                     title: "Bandcamp".to_string(),
-                    media_class: "ui_media_link_btn ui_media_link_btn_bandcamp".to_string()
+                    media_class: "ui_media_link_btn ui_media_link_btn_bandcamp".to_string(),
                 })
             }
             "youtube" => {
@@ -152,26 +152,25 @@ pub fn MediaLink(props: &Props) -> Html {
                             if default.as_bool().unwrap() {
                                 url = kk;
                             }
-                        },
+                        }
                         None => {}
                     };
-                };
+                }
                 let link = format!("https://www.youtube.com/watch?v={}", url);
                 Some(Link {
                     media_link: link,
                     title: "YouTube".to_string(),
-                    media_class: "ui_media_link_btn ui_media_link_btn_youtube".to_string()
+                    media_class: "ui_media_link_btn ui_media_link_btn_youtube".to_string(),
                 })
-
             }
             // https://www.youtube.com/watch?v=-Kqf6vtQmPQ
-            &_ => { None }
+            &_ => None,
         };
         // console_log!("{:#?}", a);
         if a != None {
             data.push(a.unwrap());
         }
-    };
+    }
 
     html! {
         data.iter().map(|link| {
@@ -184,6 +183,6 @@ pub fn MediaLink(props: &Props) -> Html {
 }
 
 // <a target="_blank" rel="noopener nofollow" title="Apple Music" aria-label="Open in Apple Music" class="ui_media_link_btn ui_media_link_btn_applemusic" href="https://geo.music.apple.com/us/album/terrifyer/68290017"></a>
-                        // <a target="_blank" rel="noopener nofollow" title="Bandcamp" aria-label="Open in Bandcamp" class="ui_media_link_btn ui_media_link_btn_bandcamp" href="https://pigdestroyer.bandcamp.com/album/terrifyer"></a>
-                        // <a target="_blank" rel="noopener nofollow" title="Spotify" aria-label="Open in Spotify" class="ui_media_link_btn ui_media_link_btn_spotify" href="https://open.spotify.com/album/6x95DGZhx18gJuxRlbwZso"></a>
-                        // <a target="_blank" rel="noopener nofollow" title="YouTube" aria-label="Open in YouTube" class="ui_media_link_btn ui_media_link_btn_youtube" href="https://www.youtube.com/watch?v=-Kqf6vtQmPQ"></a>
+// <a target="_blank" rel="noopener nofollow" title="Bandcamp" aria-label="Open in Bandcamp" class="ui_media_link_btn ui_media_link_btn_bandcamp" href="https://pigdestroyer.bandcamp.com/album/terrifyer"></a>
+// <a target="_blank" rel="noopener nofollow" title="Spotify" aria-label="Open in Spotify" class="ui_media_link_btn ui_media_link_btn_spotify" href="https://open.spotify.com/album/6x95DGZhx18gJuxRlbwZso"></a>
+// <a target="_blank" rel="noopener nofollow" title="YouTube" aria-label="Open in YouTube" class="ui_media_link_btn ui_media_link_btn_youtube" href="https://www.youtube.com/watch?v=-Kqf6vtQmPQ"></a>

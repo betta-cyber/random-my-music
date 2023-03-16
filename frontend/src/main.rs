@@ -1,9 +1,9 @@
+mod api;
 mod app;
 mod components;
-mod api;
 mod pages;
-mod store;
 mod router;
+mod store;
 
 use app::App;
 

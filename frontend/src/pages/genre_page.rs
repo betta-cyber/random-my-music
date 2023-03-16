@@ -1,17 +1,18 @@
 #[allow(unused_imports)]
 use crate::{
-    api::user_api::{genre_album_api},
     api::types::AlbumLog,
-    router::Route,
-    store::{set_auth_user, set_page_loading, set_show_alert, Store},
-    app::log, console_log,
+    api::user_api::genre_album_api,
+    app::log,
     components::form_input::FormInput,
     components::list_pagination::ListPagination,
+    console_log,
+    router::Route,
+    store::{set_auth_user, set_page_loading, set_show_alert, Store},
 };
 // use serde::{Deserialize, Serialize};
+use url_escape::decode;
 use yew::prelude::*;
 use yew_hooks::use_async;
-use url_escape::decode;
 // use yewdux::prelude::*;
 
 #[derive(Properties, PartialEq)]
@@ -30,7 +31,7 @@ pub fn genre_page(props: &DetailProps) -> Html {
         use_async(async move {
             match genre_album_api(&genre, *current_page, 40).await {
                 Ok(data) => Ok(data),
-                Err(e) => Err(e)
+                Err(e) => Err(e),
             }
         })
     };
@@ -46,7 +47,6 @@ pub fn genre_page(props: &DetailProps) -> Html {
             (),
         );
     }
-
 
     {
         let chart_data = chart_data.clone();
@@ -90,21 +90,24 @@ pub fn genre_page(props: &DetailProps) -> Html {
                     </tr>
                   </thead>
                   <tbody>
-                      {
-                          data.res.iter().map(|l| {
-                              let l = l.clone();
-                              html! {
-                                  <tr>
-                                    <td class="border w-16">
-                                        <img class="h-16 w-16" src={l.cover} />
-                                    </td>
-                                    <td class="border">{l.name}</td>
-                                    <td class="border text-center">{l.artist}</td>
-                                    <td class="border text-center">{l.rate}</td>
-                                  </tr>
-                              }
-                          }).collect::<Html>()
-                      }
+                    {
+                        data.res.iter().map(|l| {
+                            let l = l.clone();
+                            let url = format!("/album/{}", l.id);
+                            html! {
+                                <tr>
+                                  <td class="border w-16">
+                                      <img class="h-16 w-16" src={l.cover} />
+                                  </td>
+                                  <td class="border">
+                                    <a class="text-white hover:text-cyan-600" href={url}>{l.name}</a>
+                                  </td>
+                                  <td class="border">{l.artist}</td>
+                                  <td class="border text-center">{l.rate}</td>
+                                </tr>
+                            }
+                        }).collect::<Html>()
+                    }
                   </tbody>
               </table>
               <ListPagination

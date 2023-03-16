@@ -2,13 +2,12 @@ use web_sys::HtmlElement;
 use yew::prelude::*;
 use yewdux::prelude::*;
 // use yew_router::prelude::*;
-use wasm_bindgen_futures::spawn_local;
 use crate::api::user_api::logout_api;
-use crate::store::{Store, set_show_alert, set_page_loading, set_auth_user};
+use crate::store::{set_auth_user, set_page_loading, set_show_alert, Store};
+use wasm_bindgen_futures::spawn_local;
 // use crate::router::Route;
 #[allow(unused_imports)]
 use crate::{app::log, console_log};
-
 
 #[function_component]
 pub fn Menu() -> Html {
@@ -19,7 +18,12 @@ pub fn Menu() -> Html {
     let onclick = Callback::from(|e: MouseEvent| {
         if let Some(_) = e.target_dyn_into::<HtmlElement>() {
             let window = web_sys::window().expect("no global `window` exists");
-            let m = window.document().unwrap().get_elements_by_class_name("menu").item(0).unwrap();
+            let m = window
+                .document()
+                .unwrap()
+                .get_elements_by_class_name("menu")
+                .item(0)
+                .unwrap();
 
             if m.class_name() == "menu" {
                 m.set_class_name("menu change");
@@ -27,7 +31,12 @@ pub fn Menu() -> Html {
                 m.set_class_name("menu");
             }
 
-            let menu = window.document().unwrap().get_elements_by_class_name("menu-item").item(0).unwrap();
+            let menu = window
+                .document()
+                .unwrap()
+                .get_elements_by_class_name("menu-item")
+                .item(0)
+                .unwrap();
             if menu.class_name() == "menu-item" {
                 menu.set_class_name("menu-item menu-display");
             } else if menu.class_name() == "menu-item menu-display" {
@@ -36,7 +45,7 @@ pub fn Menu() -> Html {
         }
     });
 
-    let logout = Callback::from( move |_: MouseEvent| {
+    let logout = Callback::from(move |_: MouseEvent| {
         // let navigator = navigator.clone();
         let dispatch = dispatch.clone();
         spawn_local(async move {

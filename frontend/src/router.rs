@@ -2,14 +2,9 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use crate::pages::{
+    about_page::AboutPage, album_page::AlbumPage, genre_page::GenrePage, history_page::HistoryPage,
+    home_page::HomePage, login_page::SignInPage, profile_page::ProfilePage,
     register_page::RegisterPage,
-    login_page::SignInPage,
-    home_page::HomePage,
-    album_page::AlbumPage,
-    about_page::AboutPage,
-    profile_page::ProfilePage,
-    history_page::HistoryPage,
-    genre_page::GenrePage,
 };
 
 #[derive(Clone, Routable, PartialEq)]
@@ -40,7 +35,7 @@ pub fn switch(routes: Route) -> Html {
         Route::Home => html! {
             <HomePage />
         },
-        Route::Album{ album_id } => html! {
+        Route::Album { album_id } => html! {
             <AlbumPage album_id={album_id} />
         },
         Route::Register => html! {
@@ -58,7 +53,7 @@ pub fn switch(routes: Route) -> Html {
         Route::History => html! {
             <HistoryPage />
         },
-        Route::Genre{ genre } => html! {
+        Route::Genre { genre } => html! {
             <GenrePage genre={genre} />
         },
         Route::NotFound => html! {
