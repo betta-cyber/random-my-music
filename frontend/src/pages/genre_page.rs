@@ -11,6 +11,7 @@ use crate::{
 // use serde::{Deserialize, Serialize};
 use yew::prelude::*;
 use yew_hooks::use_async;
+use url_escape::decode;
 // use yewdux::prelude::*;
 
 #[derive(Properties, PartialEq)]
@@ -71,7 +72,7 @@ pub fn genre_page(props: &DetailProps) -> Html {
     html! {
     <>
     <div class="mx-auto overflow-hidden p-8 space-y-5 text-left">
-      <p class="text-4xl font-semibold">{genre}</p>
+      <p class="text-4xl font-semibold">{decode(&genre)}</p>
       if let Some(data) = chart_data.data.clone() {
           <div>
               <ListPagination
