@@ -47,13 +47,13 @@ pub fn profile_page() -> Html {
     let user = store.auth_user.clone();
     let navigator = use_navigator().unwrap();
     let fresh_time_input_ref = NodeRef::default();
-    let genres = use_state(|| vec![]);
+    let genres = use_state(std::vec::Vec::new);
     let validation_errors = use_state(|| Rc::new(RefCell::new(ValidationErrors::new())));
-    let form = use_state(|| ProfileSchema::default());
+    let form = use_state(ProfileSchema::default);
     let handle_fresh_time_input = get_input_callback("fresh_time", form.clone());
 
     let validate_input_on_blur = {
-        let cloned_form = form.clone();
+        let cloned_form = form;
         let cloned_validation_errors = validation_errors.clone();
         Callback::from(move |(name, value): (String, String)| {
             let mut data = cloned_form.deref().clone();
@@ -107,7 +107,7 @@ pub fn profile_page() -> Html {
                             if e.contains("not logged") {
                                 navigator.push(&Route::SignIn);
                             }
-                            set_show_alert(e.to_string(), dispatch.clone());
+                            set_show_alert(e, dispatch.clone());
                         }
                     }
                     if let Ok(data) = genres_api().await {
@@ -122,7 +122,7 @@ pub fn profile_page() -> Html {
 
     let on_submit = {
         let fresh_time_input_ref = fresh_time_input_ref.clone();
-        let store_dispatch = dispatch.clone();
+        let store_dispatch = dispatch;
         let user = user.clone();
         Callback::from(move |_: MouseEvent| {
             let mut user_genre: Vec<String> = vec![];
@@ -169,7 +169,7 @@ pub fn profile_page() -> Html {
                     }
                     Err(e) => {
                         set_page_loading(false, dispatch.clone());
-                        set_show_alert(e.to_string(), dispatch);
+                        set_show_alert(e, dispatch);
                     }
                 }
             });
@@ -195,11 +195,7 @@ pub fn profile_page() -> Html {
                     html! {
                         <div class="float-left m-1 break-all w-full">
                             <input class="genre" type="checkbox" checked={
-                                if user.genre_data.clone().unwrap_or("".to_string()).contains(&g.key_name) {
-                                    true
-                                } else {
-                                    false
-                                }
+                                user.genre_data.clone().unwrap_or("".to_string()).contains(&g.key_name)
                             } value={g.key_name.clone()}/>
                             <label for={g.key_name.clone()} >{ &g.name }</label>
                         </div>

@@ -48,7 +48,7 @@ fn get_input_callback(
 #[function_component(SignInPage)]
 pub fn sign_in() -> Html {
     let (store, dispatch) = use_store::<Store>();
-    let form = use_state(|| LoginSchema::default());
+    let form = use_state(LoginSchema::default);
     let username_input_ref = NodeRef::default();
     let password_input_ref = NodeRef::default();
     let navigator = use_navigator().unwrap();
@@ -95,11 +95,11 @@ pub fn sign_in() -> Html {
     };
 
     let on_submit = {
-        let cloned_form = form.clone();
+        let cloned_form = form;
         let cloned_username_input_ref = username_input_ref.clone();
         let cloned_password_input_ref = password_input_ref.clone();
-        let cloned_navigator = navigator.clone();
-        let store_dispatch = dispatch.clone();
+        let cloned_navigator = navigator;
+        let store_dispatch = dispatch;
 
         Callback::from(move |event: SubmitEvent| {
             event.prevent_default();
@@ -127,18 +127,15 @@ pub fn sign_in() -> Html {
                 match res {
                     Ok(data) => {
                         let serialized = serde_json::to_string(&data.data).unwrap();
-                        match serde_json::from_str::<User>(&serialized) {
-                            Ok(user) => {
-                                set_auth_user(Some(user), dispatch.clone());
-                            }
-                            Err(_) => {}
+                        if let Ok(user) = serde_json::from_str::<User>(&serialized) {
+                            set_auth_user(Some(user), dispatch.clone());
                         };
                         set_page_loading(false, dispatch);
                         navigator.push(&Route::Home);
                     }
                     Err(e) => {
                         set_page_loading(false, dispatch.clone());
-                        set_show_alert(e.to_string(), dispatch);
+                        set_show_alert(e, dispatch);
                         username_input.set_value("");
                         password_input.set_value("");
                     }

@@ -28,10 +28,9 @@ pub fn spinner_component(props: &Props) -> Html {
     <svg
       role="status"
       class={format!(
-        "mr-2 {} animate-spin dark:text-gray-600 {} h-5",
-        color, bg_color
+        "mr-2 {color} animate-spin dark:text-gray-600 {bg_color} h-5"
       )}
-      style={format!("height:{};width:{}", width, height)}
+      style={format!("height:{width};width:{height}")}
       viewBox="0 0 100 101"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

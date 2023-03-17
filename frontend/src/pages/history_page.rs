@@ -54,7 +54,7 @@ pub fn history_page() -> Html {
     }
 
     let callback = {
-        let current_page = current_page.clone();
+        let current_page = current_page;
         use_callback(
             move |page, _| {
                 current_page.set(page);

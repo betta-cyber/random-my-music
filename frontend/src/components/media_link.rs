@@ -27,17 +27,14 @@ pub fn MediaLink(props: &Props) -> Html {
             "spotify" => {
                 let mut spotify = "";
                 for (kk, vv) in v.as_object().unwrap() {
-                    match vv.get("default") {
-                        Some(default) => {
-                            if default.as_bool().unwrap() {
-                                spotify = kk;
-                                break;
-                            }
+                    if let Some(default) = vv.get("default") {
+                        if default.as_bool().unwrap() {
+                            spotify = kk;
+                            break;
                         }
-                        None => {}
                     }
                 }
-                let link = format!("https://open.spotify.com/album/{}", spotify);
+                let link = format!("https://open.spotify.com/album/{spotify}");
                 Some(Link {
                     media_link: link,
                     title: "Spotify".to_string(),
@@ -47,17 +44,14 @@ pub fn MediaLink(props: &Props) -> Html {
             "netease" => {
                 let mut netease = "";
                 for (kk, vv) in v.as_object().unwrap() {
-                    match vv.get("default") {
-                        Some(default) => {
-                            if default.as_bool().unwrap() {
-                                netease = kk;
-                                break;
-                            }
+                    if let Some(default) = vv.get("default") {
+                        if default.as_bool().unwrap() {
+                            netease = kk;
+                            break;
                         }
-                        None => {}
                     }
                 }
-                let link = format!("https://music.163.com/#/album?id={}", netease);
+                let link = format!("https://music.163.com/#/album?id={netease}");
                 Some(Link {
                     media_link: link,
                     title: "Netease".to_string(),
@@ -67,17 +61,14 @@ pub fn MediaLink(props: &Props) -> Html {
             "qqmusic" => {
                 let mut qqmusic = "";
                 for (kk, vv) in v.as_object().unwrap() {
-                    match vv.get("default") {
-                        Some(default) => {
-                            if default.as_bool().unwrap() {
-                                qqmusic = kk;
-                                break;
-                            }
+                    if let Some(default) = vv.get("default") {
+                        if default.as_bool().unwrap() {
+                            qqmusic = kk;
+                            break;
                         }
-                        None => {}
                     }
                 }
-                let link = format!("https://y.qq.com/n/ryqq/albumDetail/{}", qqmusic);
+                let link = format!("https://y.qq.com/n/ryqq/albumDetail/{qqmusic}");
                 Some(Link {
                     media_link: link,
                     title: "QQMusic".to_string(),
@@ -137,7 +128,7 @@ pub fn MediaLink(props: &Props) -> Html {
                         url = m;
                     }
                 }
-                let link = format!("https://{}", url);
+                let link = format!("https://{url}");
                 Some(Link {
                     media_link: link,
                     title: "Bandcamp".to_string(),
@@ -147,16 +138,13 @@ pub fn MediaLink(props: &Props) -> Html {
             "youtube" => {
                 let mut url = "";
                 for (kk, vv) in v.as_object().unwrap() {
-                    match vv.get("default") {
-                        Some(default) => {
-                            if default.as_bool().unwrap() {
-                                url = kk;
-                            }
+                    if let Some(default) = vv.get("default") {
+                        if default.as_bool().unwrap() {
+                            url = kk;
                         }
-                        None => {}
                     };
                 }
-                let link = format!("https://www.youtube.com/watch?v={}", url);
+                let link = format!("https://www.youtube.com/watch?v={url}");
                 Some(Link {
                     media_link: link,
                     title: "YouTube".to_string(),
@@ -167,7 +155,7 @@ pub fn MediaLink(props: &Props) -> Html {
             &_ => None,
         };
         // console_log!("{:#?}", a);
-        if a != None {
+        if a.is_some() {
             data.push(a.unwrap());
         }
     }

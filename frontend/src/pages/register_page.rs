@@ -55,7 +55,7 @@ fn get_input_callback(
 #[function_component(RegisterPage)]
 pub fn register_page() -> Html {
     let (store, dispatch) = use_store::<Store>();
-    let form = use_state(|| RegisterUserSchema::default());
+    let form = use_state(RegisterUserSchema::default);
     let validation_errors = use_state(|| Rc::new(RefCell::new(ValidationErrors::new())));
     let navigator = use_navigator().unwrap();
 
@@ -107,10 +107,10 @@ pub fn register_page() -> Html {
     let handle_password_confirm_input = get_input_callback("password_confirm", form.clone());
 
     let on_submit = {
-        let cloned_form = form.clone();
+        let cloned_form = form;
         let cloned_validation_errors = validation_errors.clone();
-        let cloned_navigator = navigator.clone();
-        let cloned_dispatch = dispatch.clone();
+        let cloned_navigator = navigator;
+        let cloned_dispatch = dispatch;
 
         let cloned_username_input_ref = username_input_ref.clone();
         let cloned_email_input_ref = email_input_ref.clone();
@@ -160,7 +160,7 @@ pub fn register_page() -> Html {
                             }
                             Err(e) => {
                                 // set_page_loading(false, dispatch.clone());
-                                set_show_alert(e.to_string(), dispatch);
+                                set_show_alert(e, dispatch);
                             }
                         };
                     }

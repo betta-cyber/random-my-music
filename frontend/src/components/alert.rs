@@ -33,7 +33,7 @@ pub fn alert_component(props: &Props) -> Html {
                 Box::new(|| {}) as Box<dyn FnOnce()>
             }
         },
-        (show_alert, dispatch.clone(), props.delay_ms),
+        (show_alert, dispatch, props.delay_ms),
     );
 
     html! {

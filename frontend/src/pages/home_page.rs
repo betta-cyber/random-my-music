@@ -25,13 +25,13 @@ fn AlbumCover(props: &Props) -> Html {
 
     let img_src = {
         if cover.is_empty() {
-            format!("/static/default.png")
+            "/static/default.png".to_string()
         } else {
-            format!("{}-cover", cover)
+            format!("{cover}-cover")
         }
     };
 
-    let detail_url = format!("/album/{}", id);
+    let detail_url = format!("/album/{id}");
     let onerror = Callback::from(move |_e: Event| {
         // console_log!("{:#?}", e);
         // img_src = "https://randomyourmusic.fun/static/default.png".to_string();
@@ -97,7 +97,7 @@ pub fn home() -> Html {
 
     let items = {
         let page = page.clone();
-        let client_id = client_id.clone();
+        let client_id = client_id;
         // let data = album_data.clone();
         use_async(async move {
             // let album_data = data.clone();

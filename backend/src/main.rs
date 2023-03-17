@@ -126,7 +126,7 @@ async fn main() {
     .handle_error(|error: std::io::Error| async move {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Unhandled internal error: {}", error),
+            format!("Unhandled internal error: {error}"),
         )
     });
     // build our application with a route
@@ -172,34 +172,36 @@ async fn get_today_album(
                 // try get data in database
                 let sql = format!(
                     r#"SELECT id, username, email, password, session_id, genre_data, fresh_time from rym_user where
-                                  session_id like "%{}%""#,
-                    client_id
+                                  session_id like "%{client_id}%""#
                 );
                 match sqlx::query_as::<MySql, User>(&sql)
                     .fetch_one(&state.db)
                     .await
                 {
-                    Ok(user) =>  {
+                    Ok(user) => {
                         let fresh_time: usize = user.fresh_time as usize;
                         let user_genres: String = user.genre_data.unwrap_or_default();
                         (fresh_time, user_genres)
                     }
-                    Err(_) => {
-                        (10, String::new())
-                    }
+                    Err(_) => (10, String::new()),
                 }
             }
         };
         // no genres settings
         let album_list = if user_genres.is_empty() {
-            let sql = format!(r#"SELECT r1.id, name, cover FROM album AS r1 where locate("cdn", r1.cover) ORDER BY rand() ASC LIMIT {}"#, pagination.page_size);
+            let sql = format!(
+                r#"SELECT r1.id, name, cover FROM album AS r1 where locate("cdn", r1.cover) ORDER BY rand() ASC LIMIT {}"#,
+                pagination.page_size
+            );
             sqlx::query_as::<MySql, Album>(&sql)
-            .fetch_all(&state.db)
-            .await
+                .fetch_all(&state.db)
+                .await
         } else {
             // use user genres settings
-            let search_key = user_genres.replace(",", "|");
-            let search_query = format!(r#"r2.genre in (select name from genres where path REGEXP '^({})')"#, search_key);
+            let search_key = user_genres.replace(',', "|");
+            let search_query = format!(
+                r#"r2.genre in (select name from genres where path REGEXP '^({search_key})')"#
+            );
             let sql = format!(
                 r#"SELECT r1.id, name, cover FROM album AS r1 left join album_genre r2
             on r1.id = r2.album_id where locate("cdn", r1.cover) and {}
@@ -213,12 +215,12 @@ async fn get_today_album(
         if let Ok(album_list) = album_list {
             // let mut res: Vec<Album> = vec![];
             // if pagination.page > 1 {
-                // for i in 1..pagination.page - 1 {
-                    // let page_client_id = format!("{}_{}", client_id, i);
-                    // let r: String = con.get(&page_client_id).await.unwrap_or_default();
-                    // let v: Vec<Album> = serde_json::from_str(&r).unwrap();
-                    // res.extend(v);
-                // }
+            // for i in 1..pagination.page - 1 {
+            // let page_client_id = format!("{}_{}", client_id, i);
+            // let r: String = con.get(&page_client_id).await.unwrap_or_default();
+            // let v: Vec<Album> = serde_json::from_str(&r).unwrap();
+            // res.extend(v);
+            // }
             // }
             // res.extend(album_list);
             let json = serde_json::to_string(&album_list).unwrap();
@@ -226,12 +228,12 @@ async fn get_today_album(
                 .set_ex(&page_client_id, &json, fresh_time * 60)
                 .await
                 .unwrap();
-            return json;
+            json
         } else {
             "error".to_string()
         }
     } else {
-        return res;
+        res
     }
 }
 
@@ -289,21 +291,33 @@ async fn get_album_detail(
             // insert album log
             let user_id: i32 = session.get("user_id").unwrap_or_default();
             if user_id != 0 {
-                let album_genre: String = genres.iter().map(|g| {&*g.genre}).collect::<Vec<&str>>().join("|");
+                let album_genre: String = genres
+                    .iter()
+                    .map(|g| &*g.genre)
+                    .collect::<Vec<&str>>()
+                    .join("|");
                 let sql = format!(
                     r#"select id, click_count, listen_count from user_album_log where user_id = '{}' and album_id = '{}'"#,
                     user_id, detail.id,
                 );
                 match sqlx::query(&sql).fetch_one(&state.db).await {
                     Ok(res) => {
-                        let update_sql = format!(r#"UPDATE user_album_log set click_count = {}, listen_count
-                            = {} WHERE id = {}"#, res.get::<i32, usize>(1)+1, res.get::<i32, usize>(2)+1, res.get::<i32, usize>(0));
+                        let update_sql = format!(
+                            r#"UPDATE user_album_log set click_count = {}, listen_count
+                            = {} WHERE id = {}"#,
+                            res.get::<i32, usize>(1) + 1,
+                            res.get::<i32, usize>(2) + 1,
+                            res.get::<i32, usize>(0)
+                        );
                         sqlx::query(&update_sql).execute(&state.db).await.unwrap();
                     }
                     Err(e) => {
-                        println!("{:#?}", e);
-                        let insert_sql = format!(r#"INSERT INTO user_album_log (user_id, album_id, album_genre, click_count,
-                            listen_count) VALUES ("{}", "{}", "{}", 1, 1) "#, user_id, detail.id, album_genre);
+                        println!("{e:#?}");
+                        let insert_sql = format!(
+                            r#"INSERT INTO user_album_log (user_id, album_id, album_genre, click_count,
+                            listen_count) VALUES ("{}", "{}", "{}", 1, 1) "#,
+                            user_id, detail.id, album_genre
+                        );
                         sqlx::query(&insert_sql).execute(&state.db).await.unwrap();
                     }
                 }
@@ -378,12 +392,12 @@ async fn login(
             let password = generate_password(&payload.password).await;
             if password == exist_user.password {
                 // login
-                session.insert("user_id", &exist_user.id).unwrap();
+                session.insert("user_id", exist_user.id).unwrap();
                 session
                     .insert("user_genres", &exist_user.genre_data)
                     .unwrap();
                 session
-                    .insert("fresh_time", &exist_user.fresh_time)
+                    .insert("fresh_time", exist_user.fresh_time)
                     .unwrap();
 
                 // update client session id
@@ -395,11 +409,12 @@ async fn login(
                             format!("{},{}", session_id, payload.client_id)
                         }
                     }
-                    None => {
-                        payload.client_id
-                    }
+                    None => payload.client_id,
                 };
-                let update_sql = format!(r#"update rym_user set session_id = "{}" where id = {}"#, session_id, &exist_user.id);
+                let update_sql = format!(
+                    r#"update rym_user set session_id = "{}" where id = {}"#,
+                    session_id, &exist_user.id
+                );
                 sqlx::query(&update_sql).execute(&state.db).await.unwrap();
 
                 let resp = serde_json::json!({
@@ -434,7 +449,7 @@ async fn logout(mut session: WritableSession) -> impl IntoResponse {
         "msg": "logout success",
         "data": {}
     });
-    return (StatusCode::OK, Json(resp));
+    (StatusCode::OK, Json(resp))
 }
 
 async fn register(
@@ -467,7 +482,7 @@ async fn register(
                 "msg": "error"
             });
             let resp = serde_json::to_string(&resp).unwrap();
-            return (StatusCode::BAD_REQUEST, resp);
+            (StatusCode::BAD_REQUEST, resp)
         }
         Err(_) => {
             // println!("no user {e:#?}");
@@ -485,7 +500,7 @@ async fn register(
                         "data": {}
                     });
                     let resp = serde_json::to_string(&resp).unwrap();
-                    return (StatusCode::OK, resp);
+                    (StatusCode::OK, resp)
                 }
                 Err(_) => {
                     let resp = serde_json::json!({
@@ -493,7 +508,7 @@ async fn register(
                         "msg": "error"
                     });
                     let resp = serde_json::to_string(&resp).unwrap();
-                    return (StatusCode::BAD_REQUEST, resp);
+                    (StatusCode::BAD_REQUEST, resp)
                 }
             }
         }
@@ -507,8 +522,7 @@ async fn user_info(
     let user_id: i32 = session.get("user_id").unwrap_or_default();
     let sql = format!(
         r#"SELECT id, username, email, password, session_id, genre_data, fresh_time from rym_user where
-                      id = "{}""#,
-        user_id
+                      id = "{user_id}""#
     );
     match sqlx::query_as::<MySql, User>(&sql)
         .fetch_one(&state.db)
@@ -520,7 +534,7 @@ async fn user_info(
                 "msg": "success",
                 "data": exist_user
             });
-            return (StatusCode::OK, Json(resp));
+            (StatusCode::OK, Json(resp))
         }
         Err(_) => {
             let resp = serde_json::json!({
@@ -532,8 +546,6 @@ async fn user_info(
     }
 }
 
-
-
 #[derive(Debug, Clone, Deserialize, Serialize, sqlx::FromRow)]
 pub struct Genre {
     id: i32,
@@ -542,7 +554,7 @@ pub struct Genre {
 }
 
 async fn genres(Extension(state): Extension<MyShared>) -> impl IntoResponse {
-    let sql = format!(r#"select id, name, key_name from genres where parents = """#);
+    let sql = r#"select id, name, key_name from genres where parents = """#.to_string();
     match sqlx::query_as::<MySql, Genre>(&sql)
         .fetch_all(&state.db)
         .await
@@ -555,7 +567,7 @@ async fn genres(Extension(state): Extension<MyShared>) -> impl IntoResponse {
                     "genres": genres
                 }
             });
-            return (StatusCode::OK, Json(resp));
+            (StatusCode::OK, Json(resp))
         }
         Err(_e) => {
             // println!("no user {e:#?}");
@@ -587,13 +599,13 @@ async fn user_config(
     // println!("{:#?}", sql);
     match sqlx::query(&sql).execute(&state.db).await {
         Ok(res) => {
-            println!("res {:#?}", res);
+            println!("res {res:#?}");
             let resp = serde_json::json!({
                 "code": 200,
                 "msg": "success",
                 "data": {}
             });
-            return (StatusCode::OK, Json(resp));
+            (StatusCode::OK, Json(resp))
         }
         Err(e) => {
             println!("no user {e:#?}");
@@ -601,7 +613,7 @@ async fn user_config(
                 "code": 400,
                 "msg": "failed"
             });
-            return (StatusCode::BAD_REQUEST, Json(resp));
+            (StatusCode::BAD_REQUEST, Json(resp))
         }
     }
 }
@@ -610,7 +622,6 @@ async fn user_config(
 pub struct TotalResponse {
     total: i32,
 }
-
 
 #[derive(Deserialize)]
 pub struct Pagination {
@@ -644,18 +655,26 @@ async fn get_user_album_log(
     let user_id: i32 = session.get("user_id").unwrap_or_default();
     let Query(pagination) = pagination.unwrap_or_default();
 
-    let total_sql = format!("SELECT count(*) AS total FROM user_album_log WHERE user_id = '{}'", user_id);
+    let total_sql = format!(
+        "SELECT count(*) AS total FROM user_album_log WHERE user_id = '{user_id}'"
+    );
     let total_count = sqlx::query_as::<_, TotalResponse>(&total_sql)
         .fetch_one(&state.db)
-        .await.unwrap();
+        .await
+        .unwrap();
 
     let sql = format!(
         r#"select album_id, r2.name as album_name, r2.cover, click_count, listen_count from
         user_album_log as r1 left join album as r2 on r1.album_id = r2.id
         where r1.user_id = '{}' ORDER BY r1.create_time desc limit {}, {}"#,
-        user_id, pagination.page_size*(pagination.page-1), pagination.page_size
+        user_id,
+        pagination.page_size * (pagination.page - 1),
+        pagination.page_size
     );
-    match sqlx::query_as::<MySql, UserAlbumLog>(&sql).fetch_all(&state.db).await {
+    match sqlx::query_as::<MySql, UserAlbumLog>(&sql)
+        .fetch_all(&state.db)
+        .await
+    {
         Ok(res) => {
             let resp = serde_json::json!({
                 "code": 200,
@@ -667,18 +686,17 @@ async fn get_user_album_log(
                     "total": total_count.total,
                 }
             });
-            return (StatusCode::OK, Json(resp));
+            (StatusCode::OK, Json(resp))
         }
         Err(_) => {
             let resp = serde_json::json!({
                 "code": 400,
                 "msg": "success"
             });
-            return (StatusCode::BAD_REQUEST, Json(resp));
+            (StatusCode::BAD_REQUEST, Json(resp))
         }
     }
 }
-
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, sqlx::FromRow)]
 pub struct AlbumChart {
@@ -698,18 +716,24 @@ async fn get_genre_album(
     // let user_id: i32 = session.get("user_id").unwrap_or_default();
     let Query(pagination) = pagination.unwrap_or_default();
 
-    let total_sql = format!("SELECT count(*) AS total FROM album left join album_genre on album.id = album_genre.album_id where genre = '{}'", genre);
+    let total_sql = format!("SELECT count(*) AS total FROM album left join album_genre on album.id = album_genre.album_id where genre = '{genre}'");
     let total_count = sqlx::query_as::<_, TotalResponse>(&total_sql)
         .fetch_one(&state.db)
-        .await.unwrap();
+        .await
+        .unwrap();
 
     let sql = format!(
         r#"select r1.id, r1.name, r1.artist, r1.cover, r3.rate from album as r1 left join album_genre as r2 on r1.id = r2.album_id
         left join album_detail as r3 on r1.id = r3.album_id where r2.genre = "{}"
         order by r3.rate desc limit {},{}"#,
-        genre, pagination.page_size*(pagination.page-1), pagination.page_size
+        genre,
+        pagination.page_size * (pagination.page - 1),
+        pagination.page_size
     );
-    match sqlx::query_as::<MySql, AlbumChart>(&sql).fetch_all(&state.db).await {
+    match sqlx::query_as::<MySql, AlbumChart>(&sql)
+        .fetch_all(&state.db)
+        .await
+    {
         Ok(res) => {
             let resp = serde_json::json!({
                 "code": 200,
@@ -721,18 +745,17 @@ async fn get_genre_album(
                     "total": total_count.total,
                 }
             });
-            return (StatusCode::OK, Json(resp));
+            (StatusCode::OK, Json(resp))
         }
         Err(_) => {
             let resp = serde_json::json!({
                 "code": 400,
                 "msg": "failed"
             });
-            return (StatusCode::BAD_REQUEST, Json(resp));
+            (StatusCode::BAD_REQUEST, Json(resp))
         }
     }
 }
-
 
 async fn get_artist_album(
     pagination: Option<Query<Pagination>>,
@@ -743,18 +766,26 @@ async fn get_artist_album(
     // let user_id: i32 = session.get("user_id").unwrap_or_default();
     let Query(pagination) = pagination.unwrap_or_default();
 
-    let total_sql = format!("SELECT count(*) AS total FROM album where artist = '{}'", artist);
+    let total_sql = format!(
+        "SELECT count(*) AS total FROM album where artist = '{artist}'"
+    );
     let total_count = sqlx::query_as::<_, TotalResponse>(&total_sql)
         .fetch_one(&state.db)
-        .await.unwrap();
+        .await
+        .unwrap();
 
     let sql = format!(
         r#"select r1.id, r1.name, r1.artist, r1.cover, IFNULL(r3.rate, '0.00') as rate from album as r1
         left join album_detail as r3 on r1.id = r3.album_id where r1.artist = "{}"
         order by r3.rate desc limit {},{}"#,
-        artist, pagination.page_size*(pagination.page-1), pagination.page_size
+        artist,
+        pagination.page_size * (pagination.page - 1),
+        pagination.page_size
     );
-    match sqlx::query_as::<MySql, AlbumChart>(&sql).fetch_all(&state.db).await {
+    match sqlx::query_as::<MySql, AlbumChart>(&sql)
+        .fetch_all(&state.db)
+        .await
+    {
         Ok(res) => {
             let resp = serde_json::json!({
                 "code": 200,
@@ -766,14 +797,14 @@ async fn get_artist_album(
                     "total": total_count.total,
                 }
             });
-            return (StatusCode::OK, Json(resp));
+            (StatusCode::OK, Json(resp))
         }
         Err(_) => {
             let resp = serde_json::json!({
                 "code": 400,
                 "msg": "failed"
             });
-            return (StatusCode::BAD_REQUEST, Json(resp));
+            (StatusCode::BAD_REQUEST, Json(resp))
         }
     }
 }

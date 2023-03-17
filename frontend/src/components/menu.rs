@@ -56,12 +56,12 @@ pub fn Menu() -> Html {
                 Ok(data) => {
                     set_auth_user(None, dispatch.clone());
                     set_page_loading(false, dispatch.clone());
-                    set_show_alert(data.msg.to_string(), dispatch);
+                    set_show_alert(data.msg, dispatch);
                     // navigator.push(&Route::Home);
                 }
                 Err(e) => {
                     set_page_loading(false, dispatch.clone());
-                    set_show_alert(e.to_string(), dispatch);
+                    set_show_alert(e, dispatch);
                 }
             };
         });

@@ -31,7 +31,7 @@ pub fn app() -> Html {
     let (store, _) = use_store::<Store>();
     let message = store.alert_input.alert_message.clone();
     let show_alert = store.alert_input.show_alert;
-    let is_page_loading = store.page_loading.clone();
+    let is_page_loading = store.page_loading;
 
     let alert_props = AlertProps {
         message,

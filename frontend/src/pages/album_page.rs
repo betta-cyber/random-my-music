@@ -19,9 +19,9 @@ pub fn album(props: &DetailProps) -> Html {
     let _navigator = use_navigator().unwrap();
     let album_id = props.album_id.clone();
 
-    let detail = use_state(|| AlbumDetail::default());
+    let detail = use_state(AlbumDetail::default);
     {
-        let store_dispatch = dispatch.clone();
+        let store_dispatch = dispatch;
         let detail = detail.clone();
         use_effect_with_deps(
             move |_| {
