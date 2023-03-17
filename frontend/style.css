@@ -13,6 +13,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  color: #f6f6f6;
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 64 175 / var(--tw-bg-opacity));
 }
 
 body {
@@ -163,9 +166,7 @@ img {
   color: #000;
   display: inline-block;
   cursor: pointer;
-  /* width: 40px; */
-  /* height: 40px; */
-  z-index: 99;
+  z-index: 9;
 }
 
 
@@ -201,12 +202,12 @@ img {
   display: block;
   height: 100%;
   position: fixed;
-  z-index: 1;
+  z-index: 3;
   top: 0;
   left: 0;
   background-color: rgb(15 15 15 / 80%);
   overflow-x: hidden;
-  transition: 0.5s;
+  transition: 0.2s;
   padding-top: 60px;
   width: 0;
 }

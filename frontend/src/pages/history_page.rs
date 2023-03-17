@@ -87,12 +87,15 @@ pub fn history_page() -> Html {
                       {
                           data.res.iter().map(|l| {
                               let l = l.clone();
+                              let url = format!("/album/{}", l.album_id);
                               html! {
                                   <tr>
                                     <td class="border w-16">
                                         <img class="h-16 w-16" src={l.cover} />
                                     </td>
-                                    <td class="border">{l.album_name}</td>
+                                    <td class="border px-2">
+                                        <a class="break-all text-white hover:text-cyan-600" href={url}>{l.album_name}</a>
+                                    </td>
                                     <td class="border text-center">{l.click_count}</td>
                                     <td class="border text-center">{l.listen_count}</td>
                                   </tr>

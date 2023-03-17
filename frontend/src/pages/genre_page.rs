@@ -99,8 +99,8 @@ pub fn genre_page(props: &DetailProps) -> Html {
                                   <td class="border w-16">
                                       <img class="h-16 w-16" src={l.cover} />
                                   </td>
-                                  <td class="border">
-                                    <a class="text-white hover:text-cyan-600" href={url}>{l.name}</a>
+                                  <td class="border px-2">
+                                    <a class="break-all text-white hover:text-cyan-600" href={url}>{l.name}</a>
                                   </td>
                                   <td class="border">{l.artist}</td>
                                   <td class="border text-center">{l.rate}</td>
