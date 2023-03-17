@@ -1,5 +1,5 @@
 use super::types::{
-    Album, AlbumDetail, AlbumLogData, ErrorResponse, Genre, GenreData, JsonResponse, User,
+    Album, AlbumDetail, AlbumLogData, ErrorResponse, Genre, ChartData, JsonResponse, User,
 };
 #[allow(unused)]
 use crate::{app::log, console_log};
@@ -206,7 +206,7 @@ pub async fn album_log_api(page: u32, page_size: u32) -> Result<AlbumLogData, St
     }
 }
 
-pub async fn genre_album_api(genre: &str, page: u32, page_size: u32) -> Result<GenreData, String> {
+pub async fn genre_album_api(genre: &str, page: u32, page_size: u32) -> Result<ChartData, String> {
     let url = format!(
         "{}/genre/{}?page_size={}&page={}",
         BASE_URL, genre, page_size, page
@@ -217,7 +217,31 @@ pub async fn genre_album_api(genre: &str, page: u32, page_size: u32) -> Result<G
             match res {
                 Ok(data) => {
                     let serialized = serde_json::to_string(&data.data).unwrap();
-                    match serde_json::from_str::<GenreData>(&serialized) {
+                    match serde_json::from_str::<ChartData>(&serialized) {
+                        Ok(genres) => Ok(genres),
+                        Err(_) => Err("Failed to parse response".to_string()),
+                    }
+                }
+                Err(_) => Err("Failed to parse response".to_string()),
+            }
+        }
+        Err(e) => Err(e),
+    }
+}
+
+
+pub async fn artist_album_api(artist: &str, page: u32, page_size: u32) -> Result<ChartData, String> {
+    let url = format!(
+        "{}/artist/{}?page_size={}&page={}",
+        BASE_URL, artist, page_size, page
+    );
+    match make_request(&url, "GET", None).await {
+        Ok(response) => {
+            let res = convert_result::<JsonResponse>(&response);
+            match res {
+                Ok(data) => {
+                    let serialized = serde_json::to_string(&data.data).unwrap();
+                    match serde_json::from_str::<ChartData>(&serialized) {
                         Ok(genres) => Ok(genres),
                         Err(_) => Err("Failed to parse response".to_string()),
                     }

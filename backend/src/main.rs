@@ -107,6 +107,7 @@ async fn main() {
         .route("/user", get(user_info))
         .route("/today", get(get_today_album))
         .route("/album/:album_id", get(get_album_detail))
+        .route("/artist/:artist", get(get_artist_album))
         .route("/genres", get(genres))
         .route("/genre/:genre", get(get_genre_album))
         .route("/user_album_log", get(get_user_album_log))
@@ -707,6 +708,51 @@ async fn get_genre_album(
         left join album_detail as r3 on r1.id = r3.album_id where r2.genre = "{}"
         order by r3.rate desc limit {},{}"#,
         genre, pagination.page_size*(pagination.page-1), pagination.page_size
+    );
+    match sqlx::query_as::<MySql, AlbumChart>(&sql).fetch_all(&state.db).await {
+        Ok(res) => {
+            let resp = serde_json::json!({
+                "code": 200,
+                "msg": "success",
+                "data": {
+                    "res": res,
+                    "page": pagination.page,
+                    "page_size": pagination.page_size,
+                    "total": total_count.total,
+                }
+            });
+            return (StatusCode::OK, Json(resp));
+        }
+        Err(_) => {
+            let resp = serde_json::json!({
+                "code": 400,
+                "msg": "failed"
+            });
+            return (StatusCode::BAD_REQUEST, Json(resp));
+        }
+    }
+}
+
+
+async fn get_artist_album(
+    pagination: Option<Query<Pagination>>,
+    Path(artist): Path<String>,
+    Extension(state): Extension<MyShared>,
+    // session: ReadableSession,
+) -> impl IntoResponse {
+    // let user_id: i32 = session.get("user_id").unwrap_or_default();
+    let Query(pagination) = pagination.unwrap_or_default();
+
+    let total_sql = format!("SELECT count(*) AS total FROM album where artist = '{}'", artist);
+    let total_count = sqlx::query_as::<_, TotalResponse>(&total_sql)
+        .fetch_one(&state.db)
+        .await.unwrap();
+
+    let sql = format!(
+        r#"select r1.id, r1.name, r1.artist, r1.cover, IFNULL(r3.rate, '0.00') as rate from album as r1
+        left join album_detail as r3 on r1.id = r3.album_id where r1.artist = "{}"
+        order by r3.rate desc limit {},{}"#,
+        artist, pagination.page_size*(pagination.page-1), pagination.page_size
     );
     match sqlx::query_as::<MySql, AlbumChart>(&sql).fetch_all(&state.db).await {
         Ok(res) => {

@@ -84,8 +84,8 @@ pub fn genre_page(props: &DetailProps) -> Html {
                   <thead>
                     <tr>
                       <th class="border"> {"Cover"}</th>
-                      <th class="border"> {"Album"}</th>
-                      <th class="border"> {"Artist"}</th>
+                      <th class="border px-3"> {"Album"}</th>
+                      <th class="border px-3"> {"Artist"}</th>
                       <th class="border">{"Rate"}</th>
                     </tr>
                   </thead>
@@ -94,15 +94,18 @@ pub fn genre_page(props: &DetailProps) -> Html {
                         data.res.iter().map(|l| {
                             let l = l.clone();
                             let url = format!("/album/{}", l.id);
+                            let artist_url = format!("/artist/{}", l.artist);
                             html! {
                                 <tr>
                                   <td class="border w-16">
                                       <img class="h-16 w-16" src={l.cover} />
                                   </td>
-                                  <td class="border px-2">
+                                  <td class="border px-3">
                                     <a class="break-all text-white hover:text-cyan-600" href={url}>{l.name}</a>
                                   </td>
-                                  <td class="border">{l.artist}</td>
+                                  <td class="border px-3">
+                                    <a class="break-all text-white hover:text-cyan-600" href={artist_url}>{l.artist}</a>
+                                  </td>
                                   <td class="border text-center">{l.rate}</td>
                                 </tr>
                             }

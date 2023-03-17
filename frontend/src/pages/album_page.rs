@@ -65,6 +65,7 @@ pub fn album(props: &DetailProps) -> Html {
         }
     });
 
+    let artist_url = format!("/artist/{}", &detail.artist);
     html! {
         <div class="block bg-blue-800 w-screen md:h-full h-full lg:h-screen">
             <div class="md:absolute lg:inset-y-0 lg:left-0 lg:w-2/6 md:inset-x-0 md:top-0 md:w-full" id="container_left">
@@ -84,7 +85,13 @@ pub fn album(props: &DetailProps) -> Html {
                     </div>
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
                         <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-white sm:text-3xl">{"Artist"}</span>
-                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-white sm:text-3xl">{&detail.artist}</span>
+                        <span class="col-span-2 break-all m-2 float-left text-xl tracking-tight text-white sm:text-3xl">
+                        {
+                            html!{
+                                <a class="mr-2 tracking-tight text-white font-normal" href={artist_url}>{&detail.artist}</a>
+                            }
+                        }
+                        </span>
                     </div>
                     <div class="grid grid-cols-3 lg:border-l lg:border-blue-600 lg:pl-8">
                         <span class="col-span-1 break-all m-2 float-left text-xl font-bold tracking-tight text-white sm:text-3xl">{"Rate"}</span>

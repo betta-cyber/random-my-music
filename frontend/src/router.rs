@@ -4,7 +4,7 @@ use yew_router::prelude::*;
 use crate::pages::{
     about_page::AboutPage, album_page::AlbumPage, genre_page::GenrePage, history_page::HistoryPage,
     home_page::HomePage, login_page::SignInPage, profile_page::ProfilePage,
-    register_page::RegisterPage,
+    register_page::RegisterPage, artist_page::ArtistPage,
 };
 
 #[derive(Clone, Routable, PartialEq)]
@@ -23,6 +23,8 @@ pub enum Route {
     Profile,
     #[at("/history")]
     History,
+    #[at("/artist/*artist")]
+    Artist { artist: String },
     #[at("/genre/*genre")]
     Genre { genre: String },
     #[not_found]
@@ -52,6 +54,9 @@ pub fn switch(routes: Route) -> Html {
         },
         Route::History => html! {
             <HistoryPage />
+        },
+        Route::Artist { artist } => html! {
+            <ArtistPage artist={artist} />
         },
         Route::Genre { genre } => html! {
             <GenrePage genre={genre} />

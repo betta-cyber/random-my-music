@@ -88,7 +88,7 @@ pub struct AlbumLogData {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct GenreAlbum {
+pub struct AlbumChart {
     pub id: u32,
     pub name: String,
     pub artist: String,
@@ -97,8 +97,8 @@ pub struct GenreAlbum {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct GenreData {
-    pub res: Vec<GenreAlbum>,
+pub struct ChartData {
+    pub res: Vec<AlbumChart>,
     pub total: u32,
     pub page: u32,
     pub page_size: u32,
