@@ -1,0 +1,4 @@
+debug = true
+redis_url = ""
+db_url = ""
+secret = ""

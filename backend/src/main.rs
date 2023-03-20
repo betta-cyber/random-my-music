@@ -1,4 +1,6 @@
 extern crate redis;
+mod settings;
+
 
 use async_trait::async_trait;
 use axum::{
@@ -27,6 +29,8 @@ use std::net::SocketAddr;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::{ServeDir, ServeFile};
 use tower_http::set_header::SetResponseHeaderLayer;
+use settings::Settings;
+
 
 #[derive(Clone)]
 struct MyShared {
@@ -67,13 +71,20 @@ where
 
 #[tokio::main]
 async fn main() {
+    let settings = Settings::new();
+    let settings = match settings {
+        Ok(settings) => {
+            settings
+        }
+        Err(e) => {
+            panic!("config error {}", e);
+        }
+    };
+
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    let db_connection_str = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
-        "mysql://root:9eHp7GqMEGkAq0C2IGZz@containers-us-west-54.railway.app:6021/rym_music"
-            .to_string()
-    });
+    let db_connection_str = settings.db_url;
 
     // setup connection pool
     let pool = MySqlPoolOptions::new()
@@ -82,22 +93,17 @@ async fn main() {
         .await
         .expect("can't connect to database");
 
-    let redis = redis::Client::open(
-        "redis://default:tCnRdLhEz1qt3IKJuRDX@containers-us-west-145.railway.app:5767",
-    )
+    let redis = redis::Client::open(settings.redis_url)
     .expect("can't connect to redis");
 
     let cors = CorsLayer::new()
-        // .allow_origin("http://0.0.0.0:5001".parse::<HeaderValue>().unwrap())
         .allow_origin(Any)
-        // .allow_origin("https://randomyourmusic.fun".parse::<HeaderValue>().unwrap())
         .allow_methods([Method::GET, Method::POST])
         .allow_headers([header::CONTENT_TYPE])
         .allow_credentials(false);
 
     let store = MemoryStore::new();
-    let secret = b"zgn7ryv4yuzghfzr48903m77qm4pz4xilh10toep1pgxhebkzvp2nfmodwxv7ug2";
-    let session_layer = SessionLayer::new(store, secret).with_secure(false);
+    let session_layer = SessionLayer::new(store, settings.secret.as_bytes()).with_secure(false);
 
     let api = Router::new()
         .route("/register", post(register))
