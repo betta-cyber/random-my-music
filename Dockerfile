@@ -17,4 +17,4 @@ WORKDIR /usr/src/app/backend
 RUN cargo install --path .
 EXPOSE 5001
 
-CMD ["backend"]
+CMD ["RUN_MODE=production backend"]
