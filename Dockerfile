@@ -17,4 +17,4 @@ WORKDIR /usr/src/app/backend
 RUN cargo install --path .
 EXPOSE 5001
 
-CMD ["RUN_MODE=production backend"]
+CMD ["sh", "-c", "APP_DB_URL=$MYSQL_URL APP_REDIS_URL=$REDIS_URL backend"]

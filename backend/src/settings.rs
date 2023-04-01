@@ -31,7 +31,7 @@ impl Settings {
             .add_source(File::with_name("config/local").required(false))
             // Add in settings from the environment (with a prefix of APP)
             // Eg.. `APP_DEBUG=1 ./target/app` would set the `debug` key
-            .add_source(Environment::with_prefix("app"))
+            .add_source(Environment::with_prefix("APP"))
             // You may also programmatically change settings
             // .set_override("database.url", "postgres://")?
             .build()?;
@@ -39,6 +39,8 @@ impl Settings {
         // Now that we're done, let's access our configuration
         println!("debug: {:?}", s.get_bool("debug"));
         println!("database: {:?}", s.get::<String>("db_url"));
+        println!("database: {:?}", s.get::<String>("redis_url"));
+        println!("database: {:?}", s.get::<String>("secret"));
 
         // You can deserialize (and thus freeze) the entire configuration as
         s.try_deserialize()
